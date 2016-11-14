@@ -342,6 +342,9 @@ RC BTLeafNode::locate(int searchKey, int& eid)
     }
   }
 
+  // if reach this point, the searchKey is larger than any keys in the buffer
+  eid = num;
+
   return RC_NO_SUCH_RECORD;
 }
 

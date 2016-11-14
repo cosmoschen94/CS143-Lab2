@@ -5,6 +5,9 @@
 #include "RecordFile.h"
 #include "PageFile.h"
 #include <cstdio>
+#include <iostream>
+
+using namespace std;
 
 
 int main()
@@ -30,9 +33,18 @@ int main()
 
   test_sibling.printBuffer();
 
-  test.insertAndSplit(40, record, test_sibling, sibling_key);
+  int eid = 0;
+  test.locate(1,eid);
+  cout << "Before insert and split, the eid is: ";
+  cout << eid << endl;
 
-  test_sibling.printBuffer();
+  test.insertAndSplit(42, record, test_sibling, sibling_key);
+
+  test.locate(42,eid);
+  cout << "After insert and split, the eid is: ";
+  cout << eid << endl;
+
+  //test_sibling.printBuffer();
 
   // test.printBuffer();
 
