@@ -115,21 +115,21 @@ int main()
 
 
 
-  nonLeafNodeInsert();
+  //nonLeafNodeInsert();
 
   return 0;
 }
 
-void nonLeafNodeInsert() {
-    cout << "\nTesting NonLeafNode::insert\n" << endl;
-    BTNonLeafNode test;
-    test.initializeBuffer();
-
-    cout << "Key count before insert: " << test.getKeyCount() << endl;
-    PageId pid = 1;
-    test.insert(0,pid);
-
-    cout << "Key count after insert: " << test.getKeyCount() << endl;
-
-    cout << "\nDone testing NonLeafNode::insert\n" << endl;
-}
+// void nonLeafNodeInsert() {
+//     cout << "\nTesting NonLeafNode::insert\n" << endl;
+//     BTNonLeafNode test;
+//     test.initializeBuffer();
+//
+//     cout << "Key count before insert: " << test.getKeyCount() << endl;
+//     PageId pid = 1;
+//     test.insert(0,pid);
+//
+//     cout << "Key count after insert: " << test.getKeyCount() << endl;
+//
+//     cout << "\nDone testing NonLeafNode::insert\n" << endl;
+// }

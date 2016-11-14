@@ -6,7 +6,7 @@
  * @author Junghoo "John" Cho <cho AT cs.ucla.edu>
  * @date 3/24/2008
  */
- 
+
 #include "BTreeIndex.h"
 #include "BTreeNode.h"
 
@@ -18,6 +18,10 @@ using namespace std;
 BTreeIndex::BTreeIndex()
 {
     rootPid = -1;
+    treeHeight = 0;
+
+    // initialize buffer with all 0
+    memset(buffer, 0, 1024);
 }
 
 /*
@@ -29,6 +33,42 @@ BTreeIndex::BTreeIndex()
  */
 RC BTreeIndex::open(const string& indexname, char mode)
 {
+    RC result = pf.open(indexname, mode);
+
+    if(result){
+      // error occurs
+      return result;
+    }
+
+    // endPid is 0, the pageFile is empty
+    if(pf.endPid() == 0){
+        rootPid = -1;
+        treeHeight = 0;
+        RC result = pf.write(0, buffer);
+        if(result){
+          // error occurs
+          return result;
+        }
+        return 0;
+    }
+
+    // pageFile is not empty
+    else {
+        result = pf.read(0, buffer);
+        if(result) {
+          // error occurs
+          return result;
+        }
+        int temp_rootpid, temp_treeHeight;
+        memcpy(&temp_rootpid, buffer, 4);
+        memcpy(&temp_treeHeight, buffer+4, 4);
+
+        if(temp_rootpid != 0 && temp_treeHeight != 0){
+          rootPid = temp_rootpid;
+          treeHeight = temp_treeHeight;
+        }
+    }
+
     return 0;
 }
 
