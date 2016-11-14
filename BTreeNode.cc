@@ -220,7 +220,7 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
         // insert the pair into sibling node
         int j = i - mid;
         // move pairs 12 bytes backward
-        memmove((sibling.buffer+20)+(j*12), (buffer+8)+(j*12), (42-j)*12);
+        memmove((sibling.buffer+20)+(j*12), (sibling.buffer+8)+(j*12), (42-j)*12);
 
         // start insert into sibling node
         memcpy((sibling.buffer+8)+(j*12), &rid, 8);
@@ -390,7 +390,12 @@ RC BTNonLeafNode::write(PageId pid, PageFile& pf)
  * @return the number of keys in the node
  */
 int BTNonLeafNode::getKeyCount()
-{ return 0; }
+{
+  char count[4];
+  strncpy(count, buffer, 4);
+  int num = *(int*)count;
+  return num;
+}
 
 
 /*
@@ -400,7 +405,70 @@ int BTNonLeafNode::getKeyCount()
  * @return 0 if successful. Return an error code if the node is full.
  */
 RC BTNonLeafNode::insert(int key, PageId pid)
-{ return 0; }
+{
+
+  int num = getKeyCount();
+
+  // the leaf node doesnt contain any pair.
+  if(num == 0){
+    // start inserting at buffer[8]
+    // key takes 4 bytes
+    // pid takes 4 bytes
+    memcpy(buffer+8, &key, 4);
+    memcpy(buffer+12, &pid, 4);
+
+    // update count to 1
+    int cnt = 1;
+    memcpy(buffer, &cnt, 4);
+
+  }
+  // the leaf node already contains pairs
+  else{
+
+    // the leaf node is full with 127 pairs, buffer has 1024 bytes.
+    if(num == 127) {
+      cout << "Node Full" << endl;
+      return RC_NODE_FULL;
+    }
+
+    else {
+
+      // traverse the buffer to find the right place to insert
+      for(int i = 0; i < num; i++){
+        char tmp_key[4];
+        strncpy(tmp_key, (buffer+8)+(i*8), 4);
+        int ikey = *(int*)tmp_key;
+
+        // find the slot to insert
+        if(ikey >= key){
+
+          // move pairs 8 bytes backward
+          memmove((buffer+16)+(i*8), (buffer+8)+(i*8), (num-i)*8);
+
+          // start insert
+          memcpy((buffer+8)+(i*8), &key, 4);
+          memcpy((buffer+8)+(i*8)+4, &pid, 4);
+
+          // update count
+          num++;
+          memcpy(buffer, &num, 4);
+          return 0;
+        }
+      }
+
+      // if reach this point, the pair should be inserted in the back
+      // start insert
+      memcpy((buffer+8)+(num*8), &key, 4);
+      memcpy((buffer+8)+(num*8)+4, &pid, 4);
+
+      // update count
+      num++;
+      memcpy(buffer, &num, 4);
+    }
+  }
+
+  return 0;
+}
 
 /*
  * Insert the (key, pid) pair to the node
@@ -413,7 +481,135 @@ RC BTNonLeafNode::insert(int key, PageId pid)
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, int& midKey)
-{ return 0; }
+{
+  // this should be 127
+  int num = getKeyCount();
+  // this should be 63
+  int mid = num/2;
+
+  // traverse the buffer to find the right place to insert
+  for(int i = 0; i < num; i++){
+    char tmp_key[4];
+    strncpy(tmp_key, (buffer+8)+(i*8), 4);
+    int ikey = *(int*)tmp_key;
+
+    // find the slot to insert
+    if(ikey >= key){
+
+      // the pair should be inserted into the sibling node
+      if(i > mid) {
+
+        // update sibling node count
+        int sibling_count = 64;
+        memcpy(sibling.buffer, &sibling_count, 4);
+
+        // update sibling node pageid
+        memcpy(sibling.buffer+4, (buffer+8)+(mid*8)+4, 4);
+
+        // // update current node pageid
+        // int pageid = *(int*)&sibling;
+        // memcpy(buffer+4, &pageid, 4);
+
+        // update current node count
+        int cur_count = 63;
+        memcpy(buffer, &cur_count, 4);
+
+        // copy second half to sibling node
+        memcpy(sibling.buffer+8, (buffer+8)+(64*8), 63*8);
+
+        // insert the pair into sibling node
+        int j = i - mid - 1;
+        // move pairs 8 bytes backward
+        memmove((sibling.buffer+8)+(j*8), (sibling.buffer+8)+(j*8), (63-j)*8);
+
+        // start insert into sibling node
+        memcpy((sibling.buffer+8)+(j*8), &key, 4);
+        memcpy((sibling.buffer+8)+(j*8)+4, &pid, 4);
+
+        // get the mid key
+        char mid_key[4];
+        strncpy(mid_key, (buffer+8)+(mid*8), 4);
+        midKey = *(int*)mid_key;
+
+        return 0;
+      }
+
+      // the pair should be inserted into the current node
+      else {
+        // update sibling node count
+        int sibling_count = 63;
+        memcpy(sibling.buffer, &sibling_count, 4);
+
+        // update sibling node pageid
+        memcpy(sibling.buffer+4, (buffer+8)+(mid*8)+4, 4);
+
+        // // update current node pageid
+        // int pageid = *(int*)&sibling;
+        // memcpy(buffer+4, &pageid, 4);
+
+        // update current node count
+        int cur_count = 64;
+        memcpy(buffer, &cur_count, 4);
+
+        // copy second half to sibling node
+        memcpy(sibling.buffer+8, (buffer+8)+(64*8), 63*8);
+
+        // get the mid key
+        char mid_key[4];
+        strncpy(mid_key, (buffer+8)+(mid*8), 4);
+        midKey = *(int*)mid_key;
+
+        if(mid == i) {
+          // start insert into current node by overwriting at mid
+          memcpy((buffer+8)+(i*8), &key, 4);
+          memcpy((buffer+8)+(i*8)+4, &pid, 4);
+
+          return 0;
+        }
+
+        // start insert pair into current node
+        // move pairs 8 bytes backward
+        memmove((buffer+8)+(i*8)+8, (buffer+8)+(i*8), (mid-i+1)*8);
+
+        // start insert into current node
+        memcpy((buffer+8)+(i*8), &key, 4);
+        memcpy((buffer+8)+(i*8)+4, &pid, 4);
+
+        return 0;
+      }
+    }
+  }
+
+  // if reach this point, the pair should be inserted in the back of the sibling node
+  // update sibling node count
+  int sibling_count = 64;
+  memcpy(sibling.buffer, &sibling_count, 4);
+
+  // update sibling node pageid
+  memcpy(sibling.buffer+4, (buffer+8)+(mid*8)+4, 4);
+
+  // // update current node pageid
+  // int pageid = *(int*)&sibling;
+  // memcpy(buffer+4, &pageid, 4);
+
+  // update current node count
+  int cur_count = 63;
+  memcpy(buffer, &cur_count, 4);
+
+  // copy second half to sibling node
+  memcpy(sibling.buffer+8, (buffer+8)+(64*8), 63*8);
+
+  // start insert into sibling node
+  memcpy((sibling.buffer+8)+(64*8), &key, 4);
+  memcpy((sibling.buffer+8)+(64*8)+4, &pid, 4);
+
+  // get the mid key
+  char mid_key[4];
+  strncpy(mid_key, (buffer+8)+(mid*8), 4);
+  midKey = *(int*)mid_key;
+
+  return 0;
+}
 
 /*
  * Given the searchKey, find the child-node pointer to follow and

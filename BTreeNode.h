@@ -197,6 +197,13 @@ class BTNonLeafNode {
     * The main memory buffer for loading the content of the disk page
     * that contains the node.
     */
+
+  /**
+   * Implementation Note:
+   * First four bytes of buffer is the count of pairs (key, pid). Each pair takes 8 bytes.
+   * The four bytes of the buffer after the first four bytes is the pageid.
+   * The rest fo the bytes of the buffer correspond to all pairs (key, pid).
+   */
     char buffer[PageFile::PAGE_SIZE];
 };
 
