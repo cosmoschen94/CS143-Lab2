@@ -43,7 +43,7 @@ class BTLeafNode {
    /**
     * If searchKey exists in the node, set eid to the index entry
     * with searchKey and return 0. If not, set eid to the index entry
-    * immediately after the largest index key that is smaller than searchKey, 
+    * immediately after the largest index key that is smaller than searchKey,
     * and return the error code RC_NO_SUCH_RECORD.
     * Remember that keys inside a B+tree node are always kept sorted.
     * @param searchKey[IN] the key to search for.
@@ -64,14 +64,14 @@ class BTLeafNode {
 
    /**
     * Return the pid of the next slibling node.
-    * @return the PageId of the next sibling node 
+    * @return the PageId of the next sibling node
     */
     PageId getNextNodePtr();
 
 
    /**
     * Set the next slibling node PageId.
-    * @param pid[IN] the PageId of the next sibling node 
+    * @param pid[IN] the PageId of the next sibling node
     * @return 0 if successful. Return an error code if there is an error.
     */
     RC setNextNodePtr(PageId pid);
@@ -81,7 +81,7 @@ class BTLeafNode {
     * @return the number of keys in the node
     */
     int getKeyCount();
- 
+
    /**
     * Read the content of the node from the page pid in the PageFile pf.
     * @param pid[IN] the PageId to read
@@ -89,7 +89,7 @@ class BTLeafNode {
     * @return 0 if successful. Return an error code if there is an error.
     */
     RC read(PageId pid, const PageFile& pf);
-    
+
    /**
     * Write the content of the node to the page pid in the PageFile pf.
     * @param pid[IN] the PageId to write to
@@ -98,13 +98,29 @@ class BTLeafNode {
     */
     RC write(PageId pid, PageFile& pf);
 
+
+    /**
+     * Testing functions
+     */
+    RC initializeBuffer();
+    RC printBuffer();
+
+
   private:
    /**
-    * The main memory buffer for loading the content of the disk page 
+    * The main memory buffer for loading the content of the disk page
     * that contains the node.
     */
+
+
+    /**
+     * Implementation Note:
+     * First four bytes of buffer is the count of pairs (recordid, key). Each pair takes 12 bytes.
+     * The four bytes of the buffer after the first four bytes is the pageid.
+     * The rest fo the bytes of the buffer correspond to all pairs (recordid, key).
+     */
     char buffer[PageFile::PAGE_SIZE];
-}; 
+};
 
 
 /**
@@ -167,7 +183,7 @@ class BTNonLeafNode {
     * @return 0 if successful. Return an error code if there is an error.
     */
     RC read(PageId pid, const PageFile& pf);
-    
+
    /**
     * Write the content of the node to the page pid in the PageFile pf.
     * @param pid[IN] the PageId to write to
@@ -178,10 +194,10 @@ class BTNonLeafNode {
 
   private:
    /**
-    * The main memory buffer for loading the content of the disk page 
+    * The main memory buffer for loading the content of the disk page
     * that contains the node.
     */
     char buffer[PageFile::PAGE_SIZE];
-}; 
+};
 
 #endif /* BTREENODE_H */

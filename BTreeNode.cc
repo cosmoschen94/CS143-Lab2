@@ -1,4 +1,7 @@
 #include "BTreeNode.h"
+#include <iostream>
+#include <stdlib.h>
+
 
 using namespace std;
 
@@ -10,7 +13,7 @@ using namespace std;
  */
 RC BTLeafNode::read(PageId pid, const PageFile& pf)
 { return 0; }
-    
+
 /*
  * Write the content of the node to the page pid in the PageFile pf.
  * @param pid[IN] the PageId to write to
@@ -33,8 +36,75 @@ int BTLeafNode::getKeyCount()
  * @param rid[IN] the RecordId to insert
  * @return 0 if successful. Return an error code if the node is full.
  */
+
+RC BTLeafNode::initializeBuffer()
+{
+  memset(buffer, 0, 1024);
+  return 0;
+}
+
+RC BTLeafNode::printBuffer()
+{
+  char count[4];
+  char key[4];
+  char pageid[4];
+  char sid[4];
+
+  strncpy(count, buffer, 4);
+  strncpy(pageid, buffer+8, 4);
+  strncpy(sid, buffer+12, 4);
+  strncpy(key, buffer+16, 4);
+
+  int num = *(int*)count;
+  int ikey = *(int*)key;
+  int ipageid = *(int*)pageid;
+  int isid = *(int*)sid;
+
+  cout << "There are ";
+  cout << num;
+  cout << " pairs" << endl;
+  cout << "key: ";
+  cout << ikey << endl;
+  cout << "pageid: ";
+  cout << ipageid << endl;
+  cout << "sid: ";
+  cout << isid << endl;
+  return 0;
+}
+
+
+// some helpful functions: strncpy(dest,source,num), memcpy(dest,source,num).
 RC BTLeafNode::insert(int key, const RecordId& rid)
-{ return 0; }
+{
+
+  char count[4];
+  strncpy(count, buffer, 4);
+  int num = *(int*)count;
+
+  // the leaf node doesnt contain any pair.
+  if(num == 0){
+    // start inserting at buffer[8]
+    // recordid takes 8 bytes
+    // key takes 4 bytes
+    memcpy(&buffer[8], &rid, 8);
+    memcpy(&buffer[16], &key, 4);
+
+    // update count to 1
+    int cnt = 1;
+    memcpy(&buffer, &cnt, 4);
+
+  }
+  // the leaf node already contains pairs
+  else{
+
+
+
+    // traverse the buffer to find the right place to insert
+    // for(int i = 0; i < )
+  }
+
+  return 0;
+}
 
 /*
  * Insert the (key, rid) pair to the node
@@ -46,7 +116,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
  * @param siblingKey[OUT] the first key in the sibling node after split.
  * @return 0 if successful. Return an error code if there is an error.
  */
-RC BTLeafNode::insertAndSplit(int key, const RecordId& rid, 
+RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
                               BTLeafNode& sibling, int& siblingKey)
 { return 0; }
 
@@ -76,14 +146,14 @@ RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
 
 /*
  * Return the pid of the next slibling node.
- * @return the PageId of the next sibling node 
+ * @return the PageId of the next sibling node
  */
 PageId BTLeafNode::getNextNodePtr()
 { return 0; }
 
 /*
  * Set the pid of the next slibling node.
- * @param pid[IN] the PageId of the next sibling node 
+ * @param pid[IN] the PageId of the next sibling node
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTLeafNode::setNextNodePtr(PageId pid)
@@ -97,7 +167,7 @@ RC BTLeafNode::setNextNodePtr(PageId pid)
  */
 RC BTNonLeafNode::read(PageId pid, const PageFile& pf)
 { return 0; }
-    
+
 /*
  * Write the content of the node to the page pid in the PageFile pf.
  * @param pid[IN] the PageId to write to

@@ -6,7 +6,7 @@
  * @author Junghoo "John" Cho <cho AT cs.ucla.edu>
  * @date 3/24/2008
  */
- 
+
 #include "Bruinbase.h"
 #include "SqlEngine.h"
 #include <cstdio>
