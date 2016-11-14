@@ -390,7 +390,14 @@ RC BTNonLeafNode::write(PageId pid, PageFile& pf)
  * @return the number of keys in the node
  */
 int BTNonLeafNode::getKeyCount()
-{ return 0; }
+{
+    // Note: Same as the getKeyCount above, hope this works
+    char count[4];
+    strncpy(count, buffer, 4);
+    int num = *(int*)count;
+    return num;
+
+}
 
 
 /*
@@ -434,6 +441,7 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
  */
  RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2)
  {
+     // Note: I think this makes sense, but since insert isn't done yet, don't know if it'll work.
      memcpy(buffer, pid1, 4);
 
      RC res = insert(key, pid2);
