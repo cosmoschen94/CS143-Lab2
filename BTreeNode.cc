@@ -391,10 +391,12 @@ RC BTNonLeafNode::write(PageId pid, PageFile& pf)
  */
 int BTNonLeafNode::getKeyCount()
 {
+
   char count[4];
   strncpy(count, buffer, 4);
   int num = *(int*)count;
   return num;
+
 }
 
 
@@ -628,21 +630,14 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
  * @param pid2[IN] the PageId to insert behind the key
  * @return 0 if successful. Return an error code if there is an error.
  */
-RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2)
-{ return 0;
+ RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2)
+ {
+     // Note: I think this makes sense, but since insert isn't done yet, don't know if it'll work.
+     memcpy(buffer, pid1, 4);
 
+     RC res = insert(key, pid2);
 
+     // BTNonLeafNode::insert returns 0 on success, error code otherwise
+     return res;
 
-
-
-
-
-
-
-
-
-
-
-
-
-}
+ }
