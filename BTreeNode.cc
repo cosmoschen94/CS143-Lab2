@@ -315,7 +315,35 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
  * @return 0 if searchKey is found. Otherwise return an error code.
  */
 RC BTLeafNode::locate(int searchKey, int& eid)
-{ return 0; }
+{
+  int num = getKeyCount();
+
+  for(int i=0; i<num; i++) {
+    char tmp_key[4];
+    strncpy(tmp_key, (buffer+16)+(i*12), 4);
+    int ikey = *(int*)tmp_key;
+
+    // find the key slot
+    if(ikey == searchKey){
+      eid = i;
+      return 0;
+    }
+  }
+
+  for(int i=0; i<num; i++) {
+    char tmp_key[4];
+    strncpy(tmp_key, (buffer+16)+(i*12), 4);
+    int ikey = *(int*)tmp_key;
+
+    // find the key slot immediately after the largest index key that is smaller than searchKey
+    if(ikey > searchKey){
+      eid = i;
+      return RC_NO_SUCH_RECORD;
+    }
+  }
+
+  return RC_NO_SUCH_RECORD;
+}
 
 /*
  * Read the (key, rid) pair from the eid entry.
@@ -621,7 +649,25 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
-{ return 0; }
+{
+  int num = getKeyCount();
+
+  for(int i=0; i<num; i++) {
+    char tmp_key[4];
+    strncpy(tmp_key, (buffer+8)+(i*8), 4);
+    int ikey = *(int*)tmp_key;
+
+    // find the key slot
+    if(ikey == searchKey){
+      char tmp_pid[4];
+      strncpy(tmp_pid, (buffer+8)+(i*8)+4, 4);
+      pid = *(int*)tmp_pid;
+      return 0;
+    }
+  }
+
+  return RC_NO_SUCH_RECORD;
+}
 
 /*
  * Initialize the root node with (pid1, key, pid2).
@@ -633,11 +679,13 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
  RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2)
  {
      // Note: I think this makes sense, but since insert isn't done yet, don't know if it'll work.
-     memcpy(buffer, pid1, 4);
+     memcpy(buffer, &pid1, 4);
 
-     RC res = insert(key, pid2);
+     memcpy(buffer+4, &key, 4);
+
+     memcpy(buffer+8, &pid2, 4);
 
      // BTNonLeafNode::insert returns 0 on success, error code otherwise
-     return res;
+     return 0;
 
  }
