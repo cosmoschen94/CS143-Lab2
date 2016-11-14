@@ -17,6 +17,9 @@ using namespace std;
  */
 BTreeIndex::BTreeIndex()
 {
+    // need to initialize treeHeight
+    treeHeight = 1; // toDo: is this correct?
+
     rootPid = -1;
     treeHeight = 0;
 
@@ -33,6 +36,7 @@ BTreeIndex::BTreeIndex()
  */
 RC BTreeIndex::open(const string& indexname, char mode)
 {
+
     RC result = pf.open(indexname, mode);
 
     if(result){
@@ -69,6 +73,7 @@ RC BTreeIndex::open(const string& indexname, char mode)
         }
     }
 
+
     return 0;
 }
 
@@ -78,6 +83,9 @@ RC BTreeIndex::open(const string& indexname, char mode)
  */
 RC BTreeIndex::close()
 {
+    RC res = pf.close();
+    if (res != 0 ) return res;
+    // might have to add more here
     return 0;
 }
 
@@ -89,6 +97,7 @@ RC BTreeIndex::close()
  */
 RC BTreeIndex::insert(int key, const RecordId& rid)
 {
+    // we'll need to change treeHeight accordingly
     return 0;
 }
 
@@ -112,7 +121,40 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
  */
 RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
 {
-    return 0;
+    // initial height = 1
+    // intial pid = pid of root
+    // toDO: set pid of root in constructor
+    return recursive_locate(searchkey, cursor, 1, rootPid);
+    //return 0;
+}
+
+// ToDo: not sure if pid should be a PageId or PageId&
+
+RC recursive_locate(int searchKey, IndexCursor& cursor, int height, PageId& pid) {
+    // if height reaches treeHeight, then we're looking at a leaf node
+    if (height == treeHeight) {
+        // toDo: do stuff
+    } else {
+        // if here, then we're still looking through nonleaf nodes
+
+        // need to compare the key at cursor with searchKey
+        // if we find it, then move to the corresponding pid and search from there
+        // do this with btnonleafnode.read(pid, buffer)
+        // ToDo: not sure if buffer is pf in this case
+        BTNonLeafNode n;
+        RC res = n.read(pid, pf);
+
+        if (res != 0 ) return -1; // ToDo: which error code to return here? RC_NO_SUCH_RECORD?
+
+        res = n.locateChildPtr(searchKey, pid);
+
+        if (res != 0) return -1; // ToDo: which error code to return here?
+
+        // have to increment height
+        // pid is now the next pid found by locateChildPtr
+        return recursive_locate(searchKey, cursor, height+1, pid);
+    }
+
 }
 
 /*
