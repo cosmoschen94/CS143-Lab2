@@ -113,8 +113,8 @@ RC recursive_locate(int searchKey, IndexCursor& cursor, int height, PageId& pid)
         if (res != 0) return -1; // ToDo: which error code to return here?
 
         // have to increment height
-        // pid is now the next pid found by locateChildPtr 
-        return recursive_locate(searchKey, cursor, height+1, pid)
+        // pid is now the next pid found by locateChildPtr
+        return recursive_locate(searchKey, cursor, height+1, pid);
     }
 
 }
