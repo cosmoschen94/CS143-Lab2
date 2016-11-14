@@ -12,7 +12,13 @@ using namespace std;
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTLeafNode::read(PageId pid, const PageFile& pf)
-{ return 0; }
+{
+    // See BTNonLeafNode::read notes
+    RC res = pf.read(pid, buffer);
+
+    return res;
+
+}
 
 /*
  * Write the content of the node to the page pid in the PageFile pf.
@@ -21,7 +27,13 @@ RC BTLeafNode::read(PageId pid, const PageFile& pf)
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTLeafNode::write(PageId pid, PageFile& pf)
-{ return 0; }
+{
+    // See BTNonLeafNode::write notes 
+    RC res = pf.write(pid, buffer);
+
+    return res;
+
+}
 
 /*
  * Return the number of keys stored in the node.
@@ -209,7 +221,23 @@ RC BTLeafNode::setNextNodePtr(PageId pid)
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTNonLeafNode::read(PageId pid, const PageFile& pf)
-{ return 0; }
+{
+    // Notes to self:
+
+    // buffer is the memory buffer defined in BTreeNode.h
+
+    // pf.read implementation found in PageFile.cc
+    // pf.read returns 0 on success, an error code otherwise
+    RC res = pf.read(pid, buffer);
+
+    // if (res != 0) {
+    //     return res;
+    // } else {
+    //     return 0;
+    // }
+
+    return res;  // Lolol I realized I could just do this instead of above...
+}
 
 /*
  * Write the content of the node to the page pid in the PageFile pf.
@@ -218,7 +246,16 @@ RC BTNonLeafNode::read(PageId pid, const PageFile& pf)
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTNonLeafNode::write(PageId pid, PageFile& pf)
-{ return 0; }
+{
+    // See PageFile.h for description of pf.write
+    // and see PageFile.cc for implementation of pf.write
+
+    // pf.write returns 0 on success, error code otherwise
+    RC res = pf.write(pid, buffer);
+
+    return res;
+
+}
 
 /*
  * Return the number of keys stored in the node.
@@ -268,4 +305,20 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2)
-{ return 0; }
+{ return 0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
