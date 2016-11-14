@@ -359,6 +359,11 @@ RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
 {
   int num = getKeyCount();
 
+  // out of bound access
+  if(eid >= num){
+    return RC_NO_SUCH_RECORD;
+  }
+
   for(int i=0; i<num; i++) {
 
     // find the entry
@@ -398,6 +403,48 @@ PageId BTLeafNode::getNextNodePtr()
 RC BTLeafNode::setNextNodePtr(PageId pid)
 {
   memcpy(buffer+4, &pid, 4);
+  return 0;
+}
+
+// Testing functions:
+RC BTNonLeafNode::initializeBuffer()
+{
+  memset(buffer, 0, 1024);
+  return 0;
+}
+
+RC BTNonLeafNode::printBuffer()
+{
+  char count[4];
+
+
+  strncpy(count, buffer, 4);
+
+
+  int num = *(int*)count;
+  cout << "There are ";
+  cout << num;
+  cout << " pairs" << endl;
+
+  for(int i=0; i<num; i++){
+    char key[4];
+    char pageid[4];
+    strncpy(key, (buffer+8)+(i*8), 4);
+    strncpy(pageid, (buffer+8)+(i*8)+4, 4);
+
+
+    int ikey = *(int*)key;
+    int ipageid = *(int*)pageid;
+
+    cout << "Pair ";
+    cout << i+1 << endl;
+    cout << "key: ";
+    cout << ikey << endl;
+    cout << "pageid: ";
+    cout << ipageid << endl;
+    cout << "==============" << endl;
+  }
+
   return 0;
 }
 
@@ -581,7 +628,7 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
         // insert the pair into sibling node
         int j = i - mid - 1;
         // move pairs 8 bytes backward
-        memmove((sibling.buffer+8)+(j*8), (sibling.buffer+8)+(j*8), (63-j)*8);
+        memmove((sibling.buffer+8)+(j*8)+8, (sibling.buffer+8)+(j*8), (63-j)*8);
 
         // start insert into sibling node
         memcpy((sibling.buffer+8)+(j*8), &key, 4);
@@ -615,7 +662,7 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
         // copy second half to sibling node
         memcpy(sibling.buffer+8, (buffer+8)+(64*8), 63*8);
 
-        // get the mid key
+        // get the mid key before inserting
         char mid_key[4];
         strncpy(mid_key, (buffer+8)+(mid*8), 4);
         midKey = *(int*)mid_key;
@@ -646,7 +693,7 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
   int sibling_count = 64;
   memcpy(sibling.buffer, &sibling_count, 4);
 
-  // update sibling node pageid
+  // update sibling node pageid, this pageid should be the pageid correspond to the mid_key
   memcpy(sibling.buffer+4, (buffer+8)+(mid*8)+4, 4);
 
   // // update current node pageid
@@ -661,8 +708,8 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
   memcpy(sibling.buffer+8, (buffer+8)+(64*8), 63*8);
 
   // start insert into sibling node
-  memcpy((sibling.buffer+8)+(64*8), &key, 4);
-  memcpy((sibling.buffer+8)+(64*8)+4, &pid, 4);
+  memcpy((sibling.buffer+8)+(63*8), &key, 4);
+  memcpy((sibling.buffer+8)+(63*8)+4, &pid, 4);
 
   // get the mid key
   char mid_key[4];
@@ -709,12 +756,17 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
  */
  RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2)
  {
+     int count = 1;
+
+     // initialize number of pairs to 1
+     memcpy(buffer, &count, 4);
+
      // Note: I think this makes sense, but since insert isn't done yet, don't know if it'll work.
-     memcpy(buffer, &pid1, 4);
+     memcpy(buffer+4, &pid1, 4);
 
-     memcpy(buffer+4, &key, 4);
+     memcpy(buffer+8, &key, 4);
 
-     memcpy(buffer+8, &pid2, 4);
+     memcpy(buffer+12, &pid2, 4);
 
      // BTNonLeafNode::insert returns 0 on success, error code otherwise
      return 0;
