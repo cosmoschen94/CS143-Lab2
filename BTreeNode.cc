@@ -353,14 +353,39 @@ RC BTLeafNode::locate(int searchKey, int& eid)
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
-{ return 0; }
+{
+  int num = getKeyCount();
+
+  for(int i=0; i<num; i++) {
+
+    // find the entry
+    if(i == eid){
+      char tmp_key[4];
+      strncpy(tmp_key, (buffer+16)+(i*12), 4);
+      key = *(int*)tmp_key;
+
+      char tmp_pid[4];
+      char tmp_sid[4];
+      strncpy(tmp_pid, (buffer+8)+(i*12), 4);
+      rid.pid = *(int*)tmp_pid;
+      strncpy(tmp_sid, (buffer+8)+(i*12)+4, 4);
+      rid.sid = *(int*)tmp_sid;
+    }
+  }
+
+  return 0;
+}
 
 /*
  * Return the pid of the next slibling node.
  * @return the PageId of the next sibling node
  */
 PageId BTLeafNode::getNextNodePtr()
-{ return 0; }
+{
+  char pid[4];
+  strncpy(pid, buffer+4, 4);
+  return *(int*)pid;
+}
 
 /*
  * Set the pid of the next slibling node.
@@ -368,7 +393,10 @@ PageId BTLeafNode::getNextNodePtr()
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTLeafNode::setNextNodePtr(PageId pid)
-{ return 0; }
+{
+  memcpy(buffer+4, &pid, 4);
+  return 0;
+}
 
 /*
  * Read the content of the node from the page pid in the PageFile pf.
