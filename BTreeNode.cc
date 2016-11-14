@@ -1,6 +1,7 @@
 #include "BTreeNode.h"
 #include <iostream>
 #include <stdlib.h>
+#include <cstring>
 
 
 using namespace std;
@@ -28,7 +29,7 @@ RC BTLeafNode::read(PageId pid, const PageFile& pf)
  */
 RC BTLeafNode::write(PageId pid, PageFile& pf)
 {
-    // See BTNonLeafNode::write notes 
+    // See BTNonLeafNode::write notes
     RC res = pf.write(pid, buffer);
 
     return res;
@@ -40,7 +41,12 @@ RC BTLeafNode::write(PageId pid, PageFile& pf)
  * @return the number of keys in the node
  */
 int BTLeafNode::getKeyCount()
-{ return 0; }
+{
+  char count[4];
+  strncpy(count, buffer, 4);
+  int num = *(int*)count;
+  return num;
+}
 
 /*
  * Insert a (key, rid) pair to the node.
@@ -49,6 +55,7 @@ int BTLeafNode::getKeyCount()
  * @return 0 if successful. Return an error code if the node is full.
  */
 
+// Testing functions:
 RC BTLeafNode::initializeBuffer()
 {
   memset(buffer, 0, 1024);
@@ -80,26 +87,26 @@ RC BTLeafNode::printBuffer()
     int ipageid = *(int*)pageid;
     int isid = *(int*)sid;
 
-
+    cout << "Pair ";
+    cout << i+1 << endl;
     cout << "key: ";
     cout << ikey << endl;
     cout << "pageid: ";
     cout << ipageid << endl;
     cout << "sid: ";
     cout << isid << endl;
+    cout << "==============" << endl;
   }
 
   return 0;
 }
 
 
-// some helpful functions: strncpy(dest,source,num), memcpy(dest,source,num).
+// some helpful functions: strncpy(dest,source,num), memcpy(dest,source,num), memmove(dest,source,num).
 RC BTLeafNode::insert(int key, const RecordId& rid)
 {
 
-  char count[4];
-  strncpy(count, buffer, 4);
-  int num = *(int*)count;
+  int num = getKeyCount();
 
   // the leaf node doesnt contain any pair.
   if(num == 0){
@@ -119,6 +126,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 
     // the leaf node is full with 84 pairs, buffer has 1016 bytes and last 8 bytes are left untouched.
     if(num == 84) {
+      cout << "Node Full" << endl;
       return RC_NODE_FULL;
     }
 
@@ -173,7 +181,127 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
  */
 RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
                               BTLeafNode& sibling, int& siblingKey)
-{ return 0; }
+{
+  // this should be 84
+  int num = getKeyCount();
+  // this should be 42
+  int mid = num/2;
+
+  // traverse the buffer to find the right place to insert
+  for(int i = 0; i < num; i++){
+    char tmp_key[4];
+    strncpy(tmp_key, (buffer+16)+(i*12), 4);
+    int ikey = *(int*)tmp_key;
+
+    // find the slot to insert
+    if(ikey >= key){
+
+      // the pair should be inserted into the sibling node
+      if(i >= mid) {
+
+        // update sibling node count
+        int sibling_count = 43;
+        memcpy(sibling.buffer, &sibling_count, 4);
+
+        // update sibling node pageid
+        memcpy(sibling.buffer+4, buffer+4, 4);
+
+        // update current node pageid
+        int pageid = *(int*)&sibling;
+        memcpy(buffer+4, &pageid, 4);
+
+        // update current node count
+        int cur_count = 42;
+        memcpy(buffer, &cur_count, 4);
+
+        // copy second half to sibling node
+        memcpy(sibling.buffer+8, (buffer+8)+(42*12), 42*12);
+
+        // insert the pair into sibling node
+        int j = i - mid;
+        // move pairs 12 bytes backward
+        memmove((sibling.buffer+20)+(j*12), (buffer+8)+(j*12), (42-j)*12);
+
+        // start insert into sibling node
+        memcpy((sibling.buffer+8)+(j*12), &rid, 8);
+        memcpy((sibling.buffer+8)+(j*12)+8, &key, 4);
+
+        // get the first key of the sibling node after split
+        char first_key[4];
+        strncpy(first_key, sibling.buffer+16, 4);
+        siblingKey = *(int*)first_key;
+
+        return 0;
+      }
+
+      // the pair should be inserted into the current node
+      else {
+        // update sibling node count
+        int sibling_count = 42;
+        memcpy(sibling.buffer, &sibling_count, 4);
+
+        // update sibling node pageid
+        memcpy(sibling.buffer+4, buffer+4, 4);
+
+        // update current node pageid
+        int pageid = *(int*)&sibling;
+        memcpy(buffer+4, &pageid, 4);
+
+        // update current node count
+        int cur_count = 43;
+        memcpy(buffer, &cur_count, 4);
+
+        // copy second half to sibling node
+        memcpy(sibling.buffer+8, (buffer+8)+(42*12), 42*12);
+
+        // start insert pair into current node
+        // move pairs 12 bytes backward
+        memmove((buffer+20)+(i*12), (buffer+8)+(i*12), (mid-i)*12);
+
+        // start insert into current node
+        memcpy((buffer+8)+(i*12), &rid, 8);
+        memcpy((buffer+8)+(i*12)+8, &key, 4);
+
+        // get the first key of the sibling node after split
+        char first_key[4];
+        strncpy(first_key, sibling.buffer+16, 4);
+        siblingKey = *(int*)first_key;
+
+        return 0;
+      }
+    }
+  }
+
+  // if reach this point, the pair should be inserted in the back of the sibling node
+  // update sibling node count
+  int sibling_count = 43;
+  memcpy(sibling.buffer, &sibling_count, 4);
+
+  // update sibling node pageid
+  memcpy(sibling.buffer+4, buffer+4, 4);
+
+  // update current node pageid
+  int pageid = *(int*)&sibling;
+  memcpy(buffer+4, &pageid, 4);
+
+  // update current node count
+  int cur_count = 42;
+  memcpy(buffer, &cur_count, 4);
+
+  // copy second half to sibling node
+  memcpy(sibling.buffer+8, (buffer+8)+(42*12), 42*12);
+
+  // start insert
+  memcpy((sibling.buffer+8)+(42*12), &rid, 8);
+  memcpy((sibling.buffer+8)+(42*12)+8, &key, 4);
+
+  // get the first key of the sibling node after split
+  char first_key[4];
+  strncpy(first_key, sibling.buffer+16, 4);
+  siblingKey = *(int*)first_key;
+
+  return 0;
+}
 
 /**
  * If searchKey exists in the node, set eid to the index entry
