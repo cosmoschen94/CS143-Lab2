@@ -18,5 +18,10 @@ int main()
   test.printBuffer();
   test.insert(1, record);
   test.printBuffer();
+  test.insert(3, record);
+  test.printBuffer();
+  test.insert(2, record);
+  test.printBuffer();
+
   return 0;
 }

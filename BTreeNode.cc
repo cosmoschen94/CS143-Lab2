@@ -46,29 +46,37 @@ RC BTLeafNode::initializeBuffer()
 RC BTLeafNode::printBuffer()
 {
   char count[4];
-  char key[4];
-  char pageid[4];
-  char sid[4];
+
 
   strncpy(count, buffer, 4);
-  strncpy(pageid, buffer+8, 4);
-  strncpy(sid, buffer+12, 4);
-  strncpy(key, buffer+16, 4);
+
 
   int num = *(int*)count;
-  int ikey = *(int*)key;
-  int ipageid = *(int*)pageid;
-  int isid = *(int*)sid;
-
   cout << "There are ";
   cout << num;
   cout << " pairs" << endl;
-  cout << "key: ";
-  cout << ikey << endl;
-  cout << "pageid: ";
-  cout << ipageid << endl;
-  cout << "sid: ";
-  cout << isid << endl;
+
+  for(int i=0; i<num; i++){
+    char key[4];
+    char pageid[4];
+    char sid[4];
+    strncpy(pageid, (buffer+8)+(i*12), 4);
+    strncpy(sid, (buffer+12)+(i*12), 4);
+    strncpy(key, (buffer+16)+(i*12), 4);
+
+    int ikey = *(int*)key;
+    int ipageid = *(int*)pageid;
+    int isid = *(int*)sid;
+
+
+    cout << "key: ";
+    cout << ikey << endl;
+    cout << "pageid: ";
+    cout << ipageid << endl;
+    cout << "sid: ";
+    cout << isid << endl;
+  }
+
   return 0;
 }
 
@@ -86,21 +94,56 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
     // start inserting at buffer[8]
     // recordid takes 8 bytes
     // key takes 4 bytes
-    memcpy(&buffer[8], &rid, 8);
-    memcpy(&buffer[16], &key, 4);
+    memcpy(buffer+8, &rid, 8);
+    memcpy(buffer+16, &key, 4);
 
     // update count to 1
     int cnt = 1;
-    memcpy(&buffer, &cnt, 4);
+    memcpy(buffer, &cnt, 4);
 
   }
   // the leaf node already contains pairs
   else{
 
+    // the leaf node is full with 84 pairs, buffer has 1016 bytes and last 8 bytes are left untouched.
+    if(num == 84) {
+      return RC_NODE_FULL;
+    }
 
+    else {
 
-    // traverse the buffer to find the right place to insert
-    // for(int i = 0; i < )
+      // traverse the buffer to find the right place to insert
+      for(int i = 0; i < num; i++){
+        char tmp_key[4];
+        strncpy(tmp_key, (buffer+16)+(i*12), 4);
+        int ikey = *(int*)tmp_key;
+
+        // find the slot to insert
+        if(ikey >= key){
+
+          // move pairs 12 bytes backward
+          memmove((buffer+20)+(i*12), (buffer+8)+(i*12), (num-i)*12);
+
+          // start insert
+          memcpy((buffer+8)+(i*12), &rid, 8);
+          memcpy((buffer+8)+(i*12)+8, &key, 4);
+
+          // update count
+          num++;
+          memcpy(buffer, &num, 4);
+          return 0;
+        }
+      }
+
+      // if reach this point, the pair should be inserted in the back
+      // start insert
+      memcpy((buffer+8)+(num*12), &rid, 8);
+      memcpy((buffer+8)+(num*12)+8, &key, 4);
+
+      // update count
+      num++;
+      memcpy(buffer, &num, 4);
+    }
   }
 
   return 0;
