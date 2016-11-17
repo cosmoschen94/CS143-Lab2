@@ -773,9 +773,9 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
 
  }
 
- // Testing functions:
- RC BTNonLeafNode::initializeBuffer()
- {
-   memset(buffer, 0, 1024);
-   return 0;
- }
+ // // Testing functions:
+ // RC BTNonLeafNode::initializeBuffer()
+ // {
+ //   memset(buffer, 0, 1024);
+ //   return 0;
+ // }
