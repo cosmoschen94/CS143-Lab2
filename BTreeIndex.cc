@@ -185,5 +185,33 @@ RC recursive_locate(int searchKey, IndexCursor& cursor, int height, PageId& pid)
  */
 RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
 {
+    BTLeafNode l;
+    RC res = l.read(cursor.pid, pf);
+
+    if (res != 0) return -1; //toDo: find correct error code
+
+    // BTreeNode.cc: BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
+    res = l.readEntry(cursor.eid, key, rid);
+
+    if (res != 0) return -1; //toDo: find correct error code
+
+    // Step forward
+    PageId nextPid = cursor.pid;
+    int nextEid = cursor.eid;
+
+    // Increase eid. if it hits the end as defined by getKeyCount,
+    // then set eid to 0 and move to the next pid
+    if (nextEid + 1 > l.getKeyCount()) {
+        nextEid = 0;
+        nextPid = l.getNextNodePtr();
+    } else {
+        nextEid++;
+    }
+
+    // set the new values of pid and eid
+    cursor.pid = nextPid;
+    cursor.eid = nextEid;
+    
     return 0;
+
 }
