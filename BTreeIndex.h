@@ -77,7 +77,7 @@ class BTreeIndex {
    * @return 0 if searchKey is found. Othewise, an error code
    */
   RC locate(int searchKey, IndexCursor& cursor);
-  RC recursive_locate(int searchKey, IndexCursor& cursor, int height, PageId pid);
+  RC recursive_locate(int searchKey, IndexCursor& cursor, int height, PageId& pid);
 
   /**
    * Read the (key, rid) pair at the location specified by the index cursor,

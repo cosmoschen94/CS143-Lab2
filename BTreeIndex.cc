@@ -86,7 +86,7 @@ RC BTreeIndex::close()
 {
     RC res = pf.close();
     if (res != 0 ) return res;
-    // might have to add more here
+    // ToDo: might have to add more here
     return 0;
 }
 
@@ -131,7 +131,7 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
 
 // ToDo: not sure if pid should be a PageId or PageId&
 
-RC recursive_locate(int searchKey, IndexCursor& cursor, int height, PageId& pid) {
+RC BTreeIndex::recursive_locate(int searchKey, IndexCursor& cursor, int height, PageId& pid) {
     BTNonLeafNode n;
     BTLeafNode l;
     RC res;
@@ -211,7 +211,7 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
     // set the new values of pid and eid
     cursor.pid = nextPid;
     cursor.eid = nextEid;
-    
+
     return 0;
 
 }
