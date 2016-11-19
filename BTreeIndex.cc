@@ -203,7 +203,7 @@ RC BTreeIndex::recursive_insert(int key, const RecordId& rid, int height, PageId
             int newRootPid = pf.endPid();
 
             // initialize new root with current node pid and siblingPid before write to pageFile
-            newRoot.initilizeRoot(pid, siblingKey, siblingPid);
+            newRoot.initializeRoot(pid, siblingKey, siblingPid);
 
             // write new root buffer to pageFile with pageId newRootPid
             result = newRoot.write(newRootPid,pf);
@@ -245,7 +245,7 @@ RC BTreeIndex::recursive_insert(int key, const RecordId& rid, int height, PageId
       nl.locateChildPtr(key, recursive_pid);
 
       // if success
-      RC result = recursive_insert(key, rid, height+1, recursive_pid, treeHeight, leafNodeOverflow, nonLeafNodeOverflow, siblingKey, siblingPid);
+      result = recursive_insert(key, rid, height+1, recursive_pid, treeHeight, leafNodeOverflow, nonLeafNodeOverflow, siblingKey, siblingPid);
       if(result){
         // error occurs
         return result;
@@ -369,7 +369,7 @@ RC BTreeIndex::recursive_insert(int key, const RecordId& rid, int height, PageId
               int newRootPid = pf.endPid();
 
               // initialize new root with current node pid and siblingPid before write to pageFile
-              newRoot.initilizeRoot(pid, siblingKey, siblingPid);
+              newRoot.initializeRoot(pid, siblingKey, siblingPid);
 
               // write new root buffer to pageFile with pageId newRootPid
               result = newRoot.write(newRootPid,pf);
