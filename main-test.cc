@@ -4,6 +4,7 @@
 #include "BTreeNode.h"
 #include "RecordFile.h"
 #include "PageFile.h"
+#include "BTreeIndex.h"
 #include <cstdio>
 #include <iostream>
 
@@ -13,22 +14,34 @@ void nonLeafNodeInsert();
 
 int main()
 {
+    BTreeIndex b;
 
-  BTLeafNode test;
-  BTLeafNode test_sibling;
-  int sibling_key;
-  RecordId record;
-  record.pid = 2;
-  record.sid = 3;
-  test.initializeBuffer();
-  test_sibling.initializeBuffer();
-  test.printBuffer();
+    RecordId r;
+    r.pid = 3;
+    r.sid = 5;
 
-  for(int i=0; i<84; i++){
-    test.insert(i, record);
-  }
+    RC res = b.insert(1,r);
+    if (res != 0) {
+        puts("error inserting");
+    } else {
+        puts("success inserting");
+    }
 
-  test_sibling.printBuffer();
+  // BTLeafNode test;
+  // BTLeafNode test_sibling;
+  // int sibling_key;
+  // RecordId record;
+  // record.pid = 2;
+  // record.sid = 3;
+  // test.initializeBuffer();
+  // test_sibling.initializeBuffer();
+  // test.printBuffer();
+  //
+  // for(int i=0; i<84; i++){
+  //   test.insert(i, record);
+  // }
+  //
+  // test_sibling.printBuffer();
 
 
   /**
@@ -87,32 +100,32 @@ int main()
   /**
    * test BTNonLeafNode::insert()
    */
-
-  BTNonLeafNode testNonLeaf;
-
-  testNonLeaf.initializeBuffer();
-
-  for(int i=0; i<127; i++){
-    testNonLeaf.insert(i, 1);
-  }
-
-  testNonLeaf.printBuffer();
-
-  /**
-   * test BTNonLeafNode::insertAndSplit()
-   */
-
-  BTNonLeafNode testNonLeaf_sibling;
-  testNonLeaf_sibling.initializeBuffer();
-
-  int mid_key = 0;
-  testNonLeaf.insertAndSplit(62, 2, testNonLeaf_sibling, mid_key);
-
-  testNonLeaf.printBuffer();
-
-  cout << "The mid key is: ";
-  cout << mid_key << endl;
-
+  //
+  // BTNonLeafNode testNonLeaf;
+  //
+  // testNonLeaf.initializeBuffer();
+  //
+  // for(int i=0; i<127; i++){
+  //   testNonLeaf.insert(i, 1);
+  // }
+  //
+  // testNonLeaf.printBuffer();
+  //
+  // /**
+  //  * test BTNonLeafNode::insertAndSplit()
+  //  */
+  //
+  // BTNonLeafNode testNonLeaf_sibling;
+  // testNonLeaf_sibling.initializeBuffer();
+  //
+  // int mid_key = 0;
+  // testNonLeaf.insertAndSplit(62, 2, testNonLeaf_sibling, mid_key);
+  //
+  // testNonLeaf.printBuffer();
+  //
+  // cout << "The mid key is: ";
+  // cout << mid_key << endl;
+  //
 
 
   //nonLeafNodeInsert();

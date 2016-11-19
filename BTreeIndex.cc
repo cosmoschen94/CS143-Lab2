@@ -9,6 +9,7 @@
 
 #include "BTreeIndex.h"
 #include "BTreeNode.h"
+#include <stdio.h>
 #include <cstring>
 
 using namespace std;
@@ -123,6 +124,7 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
       RC result = pf.write(0, buffer);
       if(result){
         // error occurs
+        puts("err in pf.write(0,buffer)");
         return result;
       }
 
@@ -130,6 +132,7 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
       result = l.write(pf.endPid(),pf);
       if(result){
         // error occurs
+        puts("err in l.write(pf.endPid(),pf)");
         return result;
       }
 
