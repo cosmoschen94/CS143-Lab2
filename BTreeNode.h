@@ -119,6 +119,10 @@ class BTLeafNode {
      * The four bytes of the buffer after the first four bytes is the pageid.
      * The rest fo the bytes of the buffer correspond to all pairs (recordid, key).
      */
+
+     //   __________________________________________
+     //  |__count__|__nextNodePid__|__rid__|__key__|...
+     //      4            4           8       4
     char buffer[PageFile::PAGE_SIZE];
 };
 
@@ -207,9 +211,15 @@ class BTNonLeafNode {
   /**
    * Implementation Note:
    * First four bytes of buffer is the count of pairs (key, pid). Each pair takes 8 bytes.
-   * The four bytes of the buffer after the first four bytes is the pageid.
+   * The four bytes of the buffer after the first four bytes is the pageid that points to a node
+   * with keys smaller than the key in the next 4 bytes.
    * The rest fo the bytes of the buffer correspond to all pairs (key, pid).
    */
+
+  //   __________________________________
+  //  |__count__|__pid__|__key__|__pid__|...
+  //      4        4       4       4
+
     char buffer[PageFile::PAGE_SIZE];
 };
 

@@ -203,12 +203,12 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
         int sibling_count = 43;
         memcpy(sibling.buffer, &sibling_count, 4);
 
-        // update sibling node pageid
-        memcpy(sibling.buffer+4, buffer+4, 4);
-
-        // update current node pageid
-        int pageid = *(int*)&sibling;
-        memcpy(buffer+4, &pageid, 4);
+        // // update sibling node pageid
+        // memcpy(sibling.buffer+4, buffer+4, 4);
+        //
+        // // update current node pageid
+        // int pageid = *(int*)&sibling;
+        // memcpy(buffer+4, &pageid, 4);
 
         // update current node count
         int cur_count = 42;
@@ -240,12 +240,12 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
         int sibling_count = 42;
         memcpy(sibling.buffer, &sibling_count, 4);
 
-        // update sibling node pageid
-        memcpy(sibling.buffer+4, buffer+4, 4);
-
-        // update current node pageid
-        int pageid = *(int*)&sibling;
-        memcpy(buffer+4, &pageid, 4);
+        // // update sibling node pageid
+        // memcpy(sibling.buffer+4, buffer+4, 4);
+        //
+        // // update current node pageid
+        // int pageid = *(int*)&sibling;
+        // memcpy(buffer+4, &pageid, 4);
 
         // update current node count
         int cur_count = 43;
@@ -277,12 +277,12 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
   int sibling_count = 43;
   memcpy(sibling.buffer, &sibling_count, 4);
 
-  // update sibling node pageid
-  memcpy(sibling.buffer+4, buffer+4, 4);
-
-  // update current node pageid
-  int pageid = *(int*)&sibling;
-  memcpy(buffer+4, &pageid, 4);
+  // // update sibling node pageid
+  // memcpy(sibling.buffer+4, buffer+4, 4);
+  //
+  // // update current node pageid
+  // int pageid = *(int*)&sibling;
+  // memcpy(buffer+4, &pageid, 4);
 
   // update current node count
   int cur_count = 42;
@@ -736,15 +736,19 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
     int ikey = *(int*)tmp_key;
 
     // find the key slot
-    if(ikey == searchKey){
+    if(ikey > searchKey){
       char tmp_pid[4];
-      strncpy(tmp_pid, (buffer+8)+(i*8)+4, 4);
+      strncpy(tmp_pid, (buffer+4)+(i*8), 4);
       pid = *(int*)tmp_pid;
       return 0;
     }
   }
 
-  return RC_NO_SUCH_RECORD;
+  // if reach this point, the searchKey is larger than any key in the buffer
+  char tmp_pid[4];
+  strncpy(tmp_pid, (buffer+4)+(num*8), 4);
+  pid = *(int*)tmp_pid;
+  return 0;
 }
 
 /*

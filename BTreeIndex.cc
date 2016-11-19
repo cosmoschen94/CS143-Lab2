@@ -129,6 +129,7 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
       // update treeNode buffer to pageFile
       result = l.write(pf.endPid(),pf);
       if(result){
+        // error occurs
         return result;
       }
 
@@ -139,8 +140,8 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
     else {
       bool leafNodeOverflow = false;
       bool nonLeafNodeOverflow = false;
-      int siblingKey = 0;
-      int siblingPid = 0;
+      int siblingKey = -1;
+      int siblingPid = -1;
       return recursive_insert(key, rid, 1, rootPid, treeHeight, leafNodeOverflow, nonLeafNodeOverflow, siblingKey, siblingPid);
     }
 
@@ -165,29 +166,62 @@ RC BTreeIndex::recursive_insert(int key, const RecordId& rid, int height, PageId
       if(!l.insert(key, rid)){
         result = l.write(pid,pf);
         if(result){
+          // error occurs
           return result;
         }
-        leafNodeOverflow = false;
         return 0;
       }
 
-      // overflow
+      // leafNode overflow
       else{
         BTLeafNode sibling;
-        // update overflow flag so that when this level return, nonLeafNode level will know treeNode has overflow
+        // update leafNodeOverflow flag so that when this level return, nonLeafNode level will know leafNode has overflow
         leafNodeOverflow = true;
+
+        // before insertAndSplit we need to set nextNodePtr
+        siblingPid = pf.endPid();
+        l.setNextNodePtr(siblingPid);
 
         // insert and split success
         if(!l.insertAndSplit(key, rid, sibling, siblingKey)){
+          // write l buffer to pageFile with pageId pid
           result = l.write(pid,pf);
           if(result){
             return result;
           }
 
-          siblingPid = pf.endPid();
+          // write sibling buffer to pageFile with pageId siblingPid
           result = sibling.write(siblingPid, pf);
           if(result){
             return result;
+          }
+
+          // already at rootNode level
+          if (height == 1){
+            // create a new root
+            BTNonLeafNode newRoot;
+            int newRootPid = pf.endPid();
+
+            // initialize new root with current node pid and siblingPid before write to pageFile
+            newRoot.initilizeRoot(pid, siblingKey, siblingPid);
+
+            // write new root buffer to pageFile with pageId newRootPid
+            result = newRoot.write(newRootPid,pf);
+            if(result){
+              return result;
+            }
+
+            // update rootPid and treeHeight
+            rootPid = newRootPid;
+            treeHeight = treeHeight + 1;
+            // update buffer to pageFile with pageId 0
+            memcpy(buffer, &rootPid, 4);
+            memcpy(buffer+4, &treeHeight, 4);
+            result = pf.write(0, buffer);
+            if(result){
+              // error occurs
+              return result;
+            }
           }
 
           return 0;
@@ -200,8 +234,18 @@ RC BTreeIndex::recursive_insert(int key, const RecordId& rid, int height, PageId
     // at nonLeafNode level
     else{
 
+      BTNonLeafNode nl;
+      RC result = nl.read(pid, pf);
+      if(result){
+        // error occurs
+        return result;
+      }
+
+      PageId recursive_pid;
+      nl.locateChildPtr(key, recursive_pid);
+
       // if success
-      RC result = recursive_insert(key, rid, height+1, pid, treeHeight, leafNodeOverflow, nonLeafNodeOverflow, siblingKey, siblingPid);
+      RC result = recursive_insert(key, rid, height+1, recursive_pid, treeHeight, leafNodeOverflow, nonLeafNodeOverflow, siblingKey, siblingPid);
       if(result){
         // error occurs
         return result;
@@ -229,7 +273,7 @@ RC BTreeIndex::recursive_insert(int key, const RecordId& rid, int height, PageId
         // current nonLeafNode overflow
         else{
           BTNonLeafNode sibling;
-          // update overflow flag so that when this level return, nonLeafNode level will know nonLeafNode has overflow
+          // update nonLeafNodeOverflow flag so that when this level return, upper level nonLeafNode will know lower level nonLeafNode has overflow
           nonLeafNodeOverflow = true;
           leafNodeOverflow = false;
 
@@ -300,7 +344,7 @@ RC BTreeIndex::recursive_insert(int key, const RecordId& rid, int height, PageId
         // current nonLeafNode overflow
         else{
           BTNonLeafNode sibling;
-          // update overflow flag so that when this level return, nonLeafNode level will know nonLeafNode has overflow
+          // update overflow flag so that when this level return, upper level nonLeafNode will know lower level nonLeafNode has overflow
           nonLeafNodeOverflow = true;
           leafNodeOverflow = false;
 
@@ -323,24 +367,26 @@ RC BTreeIndex::recursive_insert(int key, const RecordId& rid, int height, PageId
               // create a new root
               BTNonLeafNode newRoot;
               int newRootPid = pf.endPid();
-              // insert success
-              if(!newRoot.insert(siblingKey, siblingPid)){
-                result = newRoot.write(newRootPid,pf);
-                if(result){
-                  return result;
-                }
 
-                rootPid = newRootPid;
-                treeHeight = treeHeight + 1;
-                // update buffer
-                memcpy(buffer, &rootPid, 4);
-                memcpy(buffer+4, &treeHeight, 4);
-                result = pf.write(0, buffer);
-                if(result){
-                  // error occurs
-                  return result;
-                }
-                return 0;
+              // initialize new root with current node pid and siblingPid before write to pageFile
+              newRoot.initilizeRoot(pid, siblingKey, siblingPid);
+
+              // write new root buffer to pageFile with pageId newRootPid
+              result = newRoot.write(newRootPid,pf);
+              if(result){
+                return result;
+              }
+
+              // update rootPid and treeHeight
+              rootPid = newRootPid;
+              treeHeight = treeHeight + 1;
+              // update buffer to pageFile with pageId 0
+              memcpy(buffer, &rootPid, 4);
+              memcpy(buffer+4, &treeHeight, 4);
+              result = pf.write(0, buffer);
+              if(result){
+                // error occurs
+                return result;
               }
 
             }
