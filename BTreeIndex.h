@@ -57,6 +57,7 @@ class BTreeIndex {
    * @return error code. 0 if no error
    */
   RC insert(int key, const RecordId& rid);
+  RC recursive_insert(int key, const RecordId& rid, int height, PageId& pid, int treeHeight, bool& leafNodeOverflow, bool& nonLeafNodeOverflow, int& siblingKey, int& siblingPid);
 
   /**
    * Run the standard B+Tree key search algorithm and identify the
@@ -77,7 +78,7 @@ class BTreeIndex {
    * @return 0 if searchKey is found. Othewise, an error code
    */
   RC locate(int searchKey, IndexCursor& cursor);
-  RC recursive_locate(int searchKey, IndexCursor& cursor, int height, PageId& pid);
+  RC recursive_locate(int searchKey, IndexCursor& cursor, int height, PageId& pid, int treeHeight);
 
   /**
    * Read the (key, rid) pair at the location specified by the index cursor,
@@ -99,7 +100,9 @@ class BTreeIndex {
   /// variables in disk, so that they can be reconstructed when the index
   /// is opened again later.
 
-  /// this buffer serves to store rootpid and treeHeight to disk and its pid is always 0.
+  /// this buffer serves to store rootPid and treeHeight to disk and its pid is always 0.
+  /// the first 4 bytes store the rootPid
+  /// the next 4 bytes store the treeHeight
   char buffer[PageFile::PAGE_SIZE];
 };
 
