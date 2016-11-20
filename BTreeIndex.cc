@@ -89,7 +89,10 @@ RC BTreeIndex::open(const string& indexname, char mode)
  */
 RC BTreeIndex::close()
 {
-    RC res = pf.close();
+    memcpy(buffer, &rootPid, 4);
+    memcpy(buffer, &treeHeight, 4);
+
+    RC res = pf.close(0, buffer);
     if (res != 0 ) return res;
     // ToDo: might have to add more here
     return 0;
@@ -103,17 +106,20 @@ RC BTreeIndex::close()
  */
 RC BTreeIndex::insert(int key, const RecordId& rid)
 {
-    // we'll need to change treeHeight accordingly
 
+    if(key < 0){
+      return RC_INVALID_ATTRIBUTE;
+    }
 
     // the tree is empty
-    if(rootPid = -1) {
+    if(rootPid == -1) {
 
       BTLeafNode l;
       l.insert(key, rid);
 
+      if(pf.endPid() == 0) {rootPid = 1;}
+      else {rootPid = pf.endPid();}
 
-      rootPid = 1;
       treeHeight = 1;
 
       // update buffer
@@ -129,7 +135,7 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
       }
 
       // update treeNode buffer to pageFile
-      result = l.write(pf.endPid(),pf);
+      result = l.write(rootPid,pf);
       if(result){
         // error occurs
         puts("err in l.write(pf.endPid(),pf)");
@@ -140,15 +146,12 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
     }
 
     // the tree is not empty
-    else {
-      bool leafNodeOverflow = false;
-      bool nonLeafNodeOverflow = false;
-      int siblingKey = -1;
-      int siblingPid = -1;
-      return recursive_insert(key, rid, 1, rootPid, treeHeight, leafNodeOverflow, nonLeafNodeOverflow, siblingKey, siblingPid);
-    }
+    bool leafNodeOverflow = false;
+    bool nonLeafNodeOverflow = false;
+    int siblingKey = -1;
+    int siblingPid = -1;
+    return recursive_insert(key, rid, 1, rootPid, treeHeight, leafNodeOverflow, nonLeafNodeOverflow, siblingKey, siblingPid);
 
-    return 0;
 }
 
 
@@ -512,7 +515,7 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
 
     // Increase eid. if it hits the end as defined by getKeyCount,
     // then set eid to 0 and move to the next pid
-    if (nextEid + 1 > l.getKeyCount()) {
+    if (nextEid + 1 >= l.getKeyCount()) {
         nextEid = 0;
         nextPid = l.getNextNodePtr();
     } else {
