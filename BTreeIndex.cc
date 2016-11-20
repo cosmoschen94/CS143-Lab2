@@ -12,6 +12,9 @@
 #include <stdio.h>
 #include <cstring>
 
+//testing
+#include <queue>
+
 using namespace std;
 
 /*
@@ -535,5 +538,6 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
 
 // testing function
 RC printBTree(){
+  queue<BTreeNode> node;
   
 }
