@@ -16,51 +16,59 @@ int main()
 {
     BTreeIndex b;
 
-    b.open("testing", 'r');
-
-    RecordId r;
-    r.pid = 3;
-    r.sid = 5;
-
-    //RC res = b.insert(1,r);
-    // if (res != 0) {
-    //     puts("error inserting");
-    // } else {
-    //     puts("success inserting");
-    // }
-
-    IndexCursor cursor;
-
-    b.locate(1, cursor);
-
-    cout << cursor.pid << endl;
-    cout << cursor.eid << endl;
-
-    int key;
-    RecordId rid;
-    b.readForward(cursor, key, rid);
-
-    cout << cursor.pid << endl;
-    cout << cursor.eid << endl;
-    cout << key << endl;
-    cout << rid.pid << endl;
-    cout << rid.sid << endl;
-
-    b.readForward(cursor, key, rid);
-
-    cout << cursor.pid << endl;
-    cout << cursor.eid << endl;
-    cout << key << endl;
-    cout << rid.pid << endl;
-    cout << rid.sid << endl;
-
-    BTLeafNode l;
-    l.read(1, pf);
-    l.printBuffer();
+    b.open("testing", 'w');
 
 
+    // populate B+ Tree
+    for(int i = 0; i < 10668; i++){
+      RecordId r;
+      r.pid = i;
+      r.sid = i;
+
+      RC res = b.insert(i,r);
+      if (res != 0) {
+          puts("error inserting");
+      } else {
+          //puts("success inserting");
+      }
+    }
+
+    // RecordId temp;
+    // temp.pid = 83;
+    // temp.sid = 83;
+    // b.insert(83,temp);
+
+
+    b.printBTree();
 
     b.close();
+
+    // IndexCursor cursor;
+    //
+    // b.locate(1, cursor);
+    //
+    // cout << cursor.pid << endl;
+    // cout << cursor.eid << endl;
+    //
+    // int key;
+    // RecordId rid;
+    // b.readForward(cursor, key, rid);
+    //
+    // cout << cursor.pid << endl;
+    // cout << cursor.eid << endl;
+    // cout << key << endl;
+    // cout << rid.pid << endl;
+    // cout << rid.sid << endl;
+    //
+    // b.readForward(cursor, key, rid);
+    //
+    // cout << cursor.pid << endl;
+    // cout << cursor.eid << endl;
+    // cout << key << endl;
+    // cout << rid.pid << endl;
+    // cout << rid.sid << endl;
+
+
 
   // BTLeafNode test;
   // BTLeafNode test_sibling;

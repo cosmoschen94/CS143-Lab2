@@ -57,7 +57,7 @@ class BTreeIndex {
    * @return error code. 0 if no error
    */
   RC insert(int key, const RecordId& rid);
-  RC recursive_insert(int key, const RecordId& rid, int height, PageId& pid, int treeHeight, bool& leafNodeOverflow, bool& nonLeafNodeOverflow, int& siblingKey, int& siblingPid);
+  RC recursive_insert(int key, const RecordId& rid, int height, PageId& pid, bool& leafNodeOverflow, bool& nonLeafNodeOverflow, int& siblingKey, int& siblingPid);
 
   /**
    * Run the standard B+Tree key search algorithm and identify the

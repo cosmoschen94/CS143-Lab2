@@ -96,16 +96,18 @@ RC BTLeafNode::printBuffer()
     int ipageid = *(int*)pageid;
     int isid = *(int*)sid;
 
-    cout << "Pair ";
-    cout << i+1 << endl;
-    cout << "key: ";
-    cout << ikey << endl;
-    cout << "pageid: ";
-    cout << ipageid << endl;
-    cout << "sid: ";
-    cout << isid << endl;
-    cout << "==============" << endl;
+    cout << "{ ";
+    cout << i+1;
+    cout << ": ";
+    cout << ikey;
+    cout << ", ";
+    cout << ipageid;
+    cout << ", ";
+    cout << isid;
+    cout << " }, ";
   }
+
+  cout << endl;
 
   return 0;
 }
@@ -417,40 +419,7 @@ RC BTLeafNode::setNextNodePtr(PageId pid)
 
 
 
-RC BTNonLeafNode::printBuffer()
-{
-  char count[4];
 
-
-  strncpy(count, buffer, 4);
-
-
-  int num = *(int*)count;
-  cout << "There are ";
-  cout << num;
-  cout << " pairs" << endl;
-
-  for(int i=0; i<num; i++){
-    char key[4];
-    char pageid[4];
-    strncpy(key, (buffer+8)+(i*8), 4);
-    strncpy(pageid, (buffer+8)+(i*8)+4, 4);
-
-
-    int ikey = *(int*)key;
-    int ipageid = *(int*)pageid;
-
-    cout << "Pair ";
-    cout << i+1 << endl;
-    cout << "key: ";
-    cout << ikey << endl;
-    cout << "pageid: ";
-    cout << ipageid << endl;
-    cout << "==============" << endl;
-  }
-
-  return 0;
-}
 
 /*
  * BTNonLeafNode constructor
@@ -791,3 +760,65 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
  }
 
  // Testing functions:
+
+ RC BTNonLeafNode::printBuffer()
+ {
+   char count[4];
+
+
+   strncpy(count, buffer, 4);
+
+
+   int num = *(int*)count;
+   cout << "There are ";
+   cout << num;
+   cout << " pairs" << endl;
+
+   char firstpageid[4];
+   strncpy(firstpageid, buffer+4, 4);
+   int fpageid = *(int*)firstpageid;
+   cout << "First pid is: ";
+   cout << firstpageid << endl;
+
+   for(int i=0; i<num; i++){
+     char key[4];
+     char pageid[4];
+     strncpy(key, (buffer+8)+(i*8), 4);
+     strncpy(pageid, (buffer+8)+(i*8)+4, 4);
+
+
+     int ikey = *(int*)key;
+     int ipageid = *(int*)pageid;
+
+     cout << "{ ";
+     cout << i+1;
+     cout << ": ";
+     cout << ikey;
+     cout << ", ";
+     cout << ipageid;
+     cout << " }, ";
+
+   }
+   cout << endl;
+   return 0;
+ }
+
+ PageId BTNonLeafNode::getPageId(int pos){
+   int count = getKeyCount();
+   int ipageid;
+   for(int i=0; i < count; i++) {
+     if(i == pos){
+       char pageid[4];
+       strncpy(pageid, (buffer+4)+(i*8), 4);
+       ipageid = *(int*)pageid;
+     }
+   }
+
+   if(pos == count){
+     char pageid[4];
+     strncpy(pageid, (buffer+4)+(pos*8), 4);
+     ipageid = *(int*)pageid;
+   }
+
+   return ipageid;
+ }
