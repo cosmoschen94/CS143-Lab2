@@ -92,10 +92,10 @@ RC BTreeIndex::close()
     memcpy(buffer, &rootPid, 4);
     memcpy(buffer, &treeHeight, 4);
 
-    RC res = pf.close(0, buffer);
+    RC res = pf.write(0, buffer);
     if (res != 0 ) return res;
     // ToDo: might have to add more here
-    return 0;
+    return pf.close();
 }
 
 /*
@@ -406,6 +406,8 @@ RC BTreeIndex::recursive_insert(int key, const RecordId& rid, int height, PageId
           return 0;
       }
     }
+
+    return 0;
 }
 
 /**
