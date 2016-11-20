@@ -32,5 +32,5 @@
 *.app
 
 /704308016
-.DS_Store
-.dSYM
+*.DS_Store
+*.dSYM
