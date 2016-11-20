@@ -7,6 +7,15 @@
 using namespace std;
 
 /*
+ * BTLeafNode constructor
+ */
+BTLeafNode::BTLeafNode()
+{
+    // initialize buffer with all 0
+    memset(buffer, 0, 1024);
+}
+
+/*
  * Read the content of the node from the page pid in the PageFile pf.
  * @param pid[IN] the PageId to read
  * @param pf[IN] PageFile to read from
@@ -42,10 +51,14 @@ RC BTLeafNode::write(PageId pid, PageFile& pf)
  */
 int BTLeafNode::getKeyCount()
 {
-  char count[4];
-  strncpy(count, buffer, 4);
-  int num = *(int*)count;
-  return num;
+  // char count[4];
+  // strncpy(count, buffer, 4);
+  // int num = *(int*)count;
+  // return num;
+
+  int count = 0;
+  memcpy(&count, buffer, 4);
+  return count;
 }
 
 /*
@@ -56,11 +69,7 @@ int BTLeafNode::getKeyCount()
  */
 
 // Testing functions:
-RC BTLeafNode::initializeBuffer()
-{
-  memset(buffer, 0, 1024);
-  return 0;
-}
+
 
 RC BTLeafNode::printBuffer()
 {
@@ -406,12 +415,7 @@ RC BTLeafNode::setNextNodePtr(PageId pid)
   return 0;
 }
 
-// Testing functions:
-RC BTNonLeafNode::initializeBuffer()
-{
-  memset(buffer, 0, 1024);
-  return 0;
-}
+
 
 RC BTNonLeafNode::printBuffer()
 {
@@ -446,6 +450,15 @@ RC BTNonLeafNode::printBuffer()
   }
 
   return 0;
+}
+
+/*
+ * BTNonLeafNode constructor
+ */
+BTNonLeafNode::BTNonLeafNode()
+{
+    // initialize buffer with all 0
+    memset(buffer, 0, 1024);
 }
 
 /*
@@ -777,9 +790,4 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
 
  }
 
- // // Testing functions:
- // RC BTNonLeafNode::initializeBuffer()
- // {
- //   memset(buffer, 0, 1024);
- //   return 0;
- // }
+ // Testing functions:

@@ -531,3 +531,9 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
     return 0;
 
 }
+
+
+// testing function
+RC printBTree(){
+  
+}
