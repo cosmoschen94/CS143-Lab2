@@ -193,12 +193,12 @@ RC BTreeIndex::recursive_insert(int key, const RecordId& rid, int height, PageId
         // before insertAndSplit we need to set nextNodePtr
         siblingPid = pf.endPid();
 
-        cout << "The pid of sibling node is: ";
-        cout << siblingPid << endl;
+        //cout << "The pid of sibling node is: ";
+        //cout << siblingPid << endl;
         l.setNextNodePtr(siblingPid);
 
-        cout << "The pid of next node is: ";
-        cout << l.getNextNodePtr() << endl;
+        //cout << "The pid of next node is: ";
+        //cout << l.getNextNodePtr() << endl;
 
         // insert and split success
         if(l.insertAndSplit(key, rid, sibling, siblingKey) == 0){
@@ -314,6 +314,10 @@ RC BTreeIndex::recursive_insert(int key, const RecordId& rid, int height, PageId
               // create a new root
               BTNonLeafNode newRoot;
               int newRootPid = pf.endPid();
+
+              // initialize new root with current node pid and siblingPid before write to pageFile
+              newRoot.initializeRoot(pid, siblingKey, siblingPid);
+
               // insert success
               if(newRoot.insert(siblingKey, siblingPid) == 0){
                 result = newRoot.write(newRootPid,pf);
@@ -566,7 +570,7 @@ RC BTreeIndex::printBTree(){
     int k = 0;
     while(!nonLeafNodeQueue.empty()){
 
-      cout << "Nonleaf node: ";
+      cout << "Root node: ";
       cout << k << endl;
       k++;
       nonLeafNodeQueue.front().printBuffer();
@@ -585,7 +589,7 @@ RC BTreeIndex::printBTree(){
       }
 
       nonLeafNodeQueue.pop();
-      return 0;
+      // return 0;
     }
 
     k = 0;
@@ -601,5 +605,71 @@ RC BTreeIndex::printBTree(){
   }
 
 
+  else if(treeHeight == 3){
+    BTNonLeafNode rootNode;
+    rootNode.read(rootPid, pf);
+    nonLeafNodeQueue.push(rootNode);
+    int curHeight = 1;
+    int k = 0;
+    while(!nonLeafNodeQueue.empty()){
 
+      cout << "Root node: ";
+      cout << k << endl;
+      k++;
+      nonLeafNodeQueue.front().printBuffer();
+      cout << "=======================" << endl;
+      int count = nonLeafNodeQueue.front().getKeyCount();
+
+      for(int i = 0; i <= count; i++) {
+
+        PageId pid = nonLeafNodeQueue.front().getPageId(i);
+        if(pid != 0){
+          BTNonLeafNode nl;
+          nl.read(pid, pf);
+          nonLeafNodeQueue.push(nl);
+        }
+
+      }
+
+      nonLeafNodeQueue.pop();
+      break;
+      // return 0;
+    }
+
+    k = 0;
+    while(!nonLeafNodeQueue.empty()){
+
+      cout << "Non leaf node: ";
+      cout << k << endl;
+      k++;
+      nonLeafNodeQueue.front().printBuffer();
+      cout << "=======================" << endl;
+      int count = nonLeafNodeQueue.front().getKeyCount();
+
+      for(int i = 0; i <= count; i++) {
+
+        PageId pid = nonLeafNodeQueue.front().getPageId(i);
+        if(pid != 0){
+          BTLeafNode l;
+          l.read(pid, pf);
+          leafNodeQueue.push(l);
+        }
+
+      }
+
+      nonLeafNodeQueue.pop();
+      // return 0;
+    }
+
+    // k = 0;
+    // while(!leafNodeQueue.empty()){
+    //   cout << "Leaf node ";
+    //   cout << k << endl;
+    //   k++;
+    //   leafNodeQueue.front().printBuffer();
+    //   leafNodeQueue.pop();
+    //   cout << "=======================" << endl;
+    //
+    // }
+  }
 }

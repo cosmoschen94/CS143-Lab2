@@ -10,24 +10,29 @@
 
 using namespace std;
 
-void nonLeafNodeInsert();
-
 int main()
 {
     BTreeIndex b;
 
     b.open("testing", 'w');
 
+    // 85 is the number of tuples that will cause leaf overflow
+    // 5419 is the number of tuples that will cause nonleaf overflow, which will cause a new root to be created
 
-    // populate B+ Tree
-    for(int i = 0; i < 10668; i++){
+    int tuples = 5419;
+
+    //populate B+ Tree
+    for(int i = 0; i < tuples; i++){
       RecordId r;
       r.pid = i;
       r.sid = i;
 
       RC res = b.insert(i,r);
       if (res != 0) {
+          cout << i << endl;
           puts("error inserting");
+          //return 0;
+
       } else {
           //puts("success inserting");
       }
