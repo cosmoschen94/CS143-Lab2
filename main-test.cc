@@ -19,7 +19,7 @@ int main()
     // 85 is the number of tuples that will cause leaf overflow
     // 5419 is the number of tuples that will cause nonleaf overflow, which will cause a new root to be created
 
-    int tuples = 5419;
+    int tuples = 5377;
 
     //populate B+ Tree
     for(int i = 0; i < tuples; i++){

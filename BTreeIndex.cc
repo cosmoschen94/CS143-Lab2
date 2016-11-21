@@ -296,7 +296,7 @@ RC BTreeIndex::recursive_insert(int key, const RecordId& rid, int height, PageId
           leafNodeOverflow = false;
 
           // insert and split success
-          if(nl.insertAndSplit(key, pid, sibling, siblingKey) == 0){
+          if(nl.insertAndSplit(key, siblingPid, sibling, siblingKey) == 0){
             result = nl.write(pid,pf);
             if(result){
               return result;
@@ -318,26 +318,22 @@ RC BTreeIndex::recursive_insert(int key, const RecordId& rid, int height, PageId
               // initialize new root with current node pid and siblingPid before write to pageFile
               newRoot.initializeRoot(pid, siblingKey, siblingPid);
 
-              // insert success
-              if(newRoot.insert(siblingKey, siblingPid) == 0){
-                result = newRoot.write(newRootPid,pf);
-                if(result){
-                  return result;
-                }
-
-                rootPid = newRootPid;
-                treeHeight = treeHeight + 1;
-                // update buffer
-                memcpy(buffer, &rootPid, 4);
-                memcpy(buffer+4, &treeHeight, 4);
-                result = pf.write(0, buffer);
-                if(result){
-                  // error occurs
-                  return result;
-                }
-                return 0;
+              result = newRoot.write(newRootPid,pf);
+              if(result){
+                return result;
               }
 
+              rootPid = newRootPid;
+              treeHeight = treeHeight + 1;
+              // update buffer
+              memcpy(buffer, &rootPid, 4);
+              memcpy(buffer+4, &treeHeight, 4);
+              result = pf.write(0, buffer);
+              if(result){
+                // error occurs
+                return result;
+              }
+              return 0;
             }
             return 0;
           }
@@ -371,7 +367,7 @@ RC BTreeIndex::recursive_insert(int key, const RecordId& rid, int height, PageId
           leafNodeOverflow = false;
 
           // insert and split success
-          if(nl.insertAndSplit(key, pid, sibling, siblingKey) == 0){
+          if(nl.insertAndSplit(key, siblingPid, sibling, siblingKey) == 0){
             result = nl.write(pid,pf);
             if(result){
               return result;
@@ -661,15 +657,14 @@ RC BTreeIndex::printBTree(){
       // return 0;
     }
 
-    // k = 0;
-    // while(!leafNodeQueue.empty()){
-    //   cout << "Leaf node ";
-    //   cout << k << endl;
-    //   k++;
-    //   leafNodeQueue.front().printBuffer();
-    //   leafNodeQueue.pop();
-    //   cout << "=======================" << endl;
-    //
-    // }
+    k = 0;
+    while(!leafNodeQueue.empty()){
+      cout << "Leaf node ";
+      cout << k << endl;
+      k++;
+      leafNodeQueue.front().printBuffer();
+      leafNodeQueue.pop();
+      cout << "=======================" << endl;
+    }
   }
 }
