@@ -14,6 +14,7 @@
 #include <fstream>
 #include "Bruinbase.h"
 #include "SqlEngine.h"
+#include "BTreeIndex.h"
 
 using namespace std;
 
@@ -137,11 +138,20 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
   string line;
   int key;
   string value;
+  BTreeIndex b;
+
 
   if (rf.open(table + ".tbl", 'w') != 0) {
       puts("Error opening RecordFile");
       return -1;
   }
+
+  // Part D stuff
+    if (index) {
+        b.open(table + ".idx", 'w');
+    }
+
+
 
   // http://stackoverflow.com/questions/7868936/read-file-line-by-line
   ifstream infile(loadfile.c_str());
@@ -157,14 +167,52 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
         puts("Error parsing line in file");
         return -1;
     }
-    if (tryParsing < 0) {
+    if (tryAppending < 0) {
         puts("Error appending line to RecordFile");
         return -1;
     }
+
+    // Part D: if index == true then try inserting into BTreeIndex
+    // BTreeIndex::insert(int key, const RecordId& rid)
+    if (index) {
+        int tryInserting = b.insert(key, rid);
+        if (tryInserting < 0) {
+            puts("Error inserting to BTreeIndex");
+            return -1;
+        }
+    }
+
+  }
+
+  if (index) {
+    b.close();
   }
   puts("Successfully wrote all tuples to RecordFile");
-  infile.close();
 
+  infile.close();
+  /*
+  if (index) {
+      // part D: if the third parameter index is set to true, Bruinbase creates the corresponding B+tree index on the key column of the table. The index file should be named 'tblname.idx' where tblname is the name of the table, and created in the current working directory. Essentially, you have to change the load function, such that if index is true, for every tuple inserted into the table, you obtain RecordId of the inserted tuple, and insert a corresponding (key, RecordId) pair to the B+tree of the table.
+      BTreeIndex b;
+
+      // BTreeIndex::open(const string& indexname, char mode)
+      b.open(table + ".idx", "w");
+
+      while(getline(infile, line)) {
+        int tryParsing = parseLoadLine(line, key, value);
+        int tryAppending = rf.append(key, value, rid);
+        if (tryParsing < 0) {
+            puts("Error parsing line in file");
+            return -1;
+        }
+        if (tryAppending)
+
+
+      }
+
+      b.close();
+  }
+  */
   return 0;
 }
 
