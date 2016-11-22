@@ -55,7 +55,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   // attempt to open the corresponding index file
   BTreeIndex b;
   IndexCursor c; // need this for b.locate later on
-  if ( b.open(table + ".tbl", 'r') == 0) {
+  if ( b.open(table + ".idx", 'r') == 0) {
       puts("Associated index file does exist!");
 
       bool condition_equal = false;
