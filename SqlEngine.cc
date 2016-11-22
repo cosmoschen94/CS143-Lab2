@@ -68,42 +68,37 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       int condition_max_val = -999;
 
       for (unsigned i = 0; i < cond.size(); i++) {
-          switch (cond[i].attr) {
-              case 1: // attr = 1 is key
-                switch (cond[i].comp) {
-                    case SelCond::EQ:
-                        condition_equal = true;
-                        condition_equal_val = atoi(cond[i].value);
-                        break;
-                    case SelCond::NE:
-                        break;
-                    case SelCond::GT:
-                        break;
-                    case SelCond::LT:
-                        break;
-                    case SelCond::GE:
-                        break;
-                    case SelCond::LE:
-                        break;
-                } //end switch cond[i].comp
-              break;
-              case 2: // attr = 2 is value
-              continue;
-          }
+        switch (cond[i].comp) {
+            case SelCond::EQ:
+                condition_equal = true;
+                condition_equal_val = atoi(cond[i].value);
+                break;
+            case SelCond::NE:
+                break;
+            case SelCond::GT:
+                break;
+            case SelCond::LT:
+                break;
+            case SelCond::GE:
+                break;
+            case SelCond::LE:
+                break;
+        } //end switch cond[i].comp
       } //end for
 
-      // get an initial value for cursor c
+      // This case handles SELECT __ FROM ___ WHERE key=3
+      // We only have to search one tuple
       if (condition_equal) {
           puts("condition equal");
           // BTreeIndex::locate(int searchKey, IndexCursor& cursor)
-          b.locate(condition_equal_val, c);
+          //b.locate(condition_equal_val, c);
       }
       // todo: add the other conditions
 
       // BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
-      while (b.readForward(c, key, rid ) == 0) {
-
-      }
+    //   while (b.readForward(c, key, rid ) == 0) {
+      //
+    //   }
 
 
 
