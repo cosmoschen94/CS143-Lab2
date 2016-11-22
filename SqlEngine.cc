@@ -91,7 +91,12 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       if (condition_equal) {
           puts("condition equal");
           // BTreeIndex::locate(int searchKey, IndexCursor& cursor)
-          //b.locate(condition_equal_val, c);
+          b.locate(condition_equal_val, c);
+          b.readForward(c, key, rid);
+          rf.read(rid, key, value);
+          fprintf(stdout, "%d '%s'\n", key, value.c_str());
+          
+
       }
       // todo: add the other conditions
 
