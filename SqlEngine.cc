@@ -92,10 +92,17 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
           }
       } //end for
 
+      // get an initial value for cursor c
       if (condition_equal) {
           puts("condition equal");
           // BTreeIndex::locate(int searchKey, IndexCursor& cursor)
           b.locate(condition_equal_val, c);
+      }
+      // todo: add the other conditions
+
+      // BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
+      while (b.readForward(c, key, rid ) == 0) {
+
       }
 
 
