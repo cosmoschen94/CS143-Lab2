@@ -52,6 +52,59 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     return rc;
   }
 
+  // attempt to open the corresponding index file
+  BTreeIndex b;
+  IndexCursor c; // need this for b.locate later on
+  if ( b.open(table + ".tbl", 'r') == 0) {
+      puts("Associated index file does exist!");
+
+      bool condition_equal = false;
+      int condition_equal_val = -999;
+
+      bool condition_min = false;
+      int condition_min_val = -999;
+
+      bool condition_max = false;
+      int condition_max_val = -999;
+
+      for (unsigned i = 0; i < cond.size(); i++) {
+          switch (cond[i].attr) {
+              case 1: // attr = 1 is key
+                switch (cond[i].comp) {
+                    case SelCond::EQ:
+                        condition_equal = true;
+                        condition_equal_val = atoi(cond[i].value);
+                        break;
+                    case SelCond::NE:
+                        break;
+                    case SelCond::GT:
+                        break;
+                    case SelCond::LT:
+                        break;
+                    case SelCond::GE:
+                        break;
+                    case SelCond::LE:
+                        break;
+                } //end switch cond[i].comp
+              break;
+              case 2: // attr = 2 is value
+              continue;
+          }
+      } //end for
+
+      if (condition_equal) {
+          puts("condition equal");
+          // BTreeIndex::locate(int searchKey, IndexCursor& cursor)
+          b.locate(condition_equal_val, c);
+      }
+
+
+
+  } else {
+      puts("Associated index file does not exist. Proceeding with skeleton code implementation.");
+
+
+
   // scan the table file from the beginning
   rid.pid = rid.sid = 0;
   count = 0;
@@ -118,6 +171,8 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     next_tuple:
     ++rid;
   }
+
+  } //end else from opening index - todo: is this in the right area?
 
   // print matching tuple count if "select count(*)"
   if (attr == 4) {
