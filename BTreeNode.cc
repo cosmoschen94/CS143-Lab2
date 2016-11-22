@@ -137,7 +137,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 
     // the leaf node is full with 84 pairs, buffer has 1016 bytes and last 8 bytes are left untouched.
     if(num == 84) {
-      cout << "Node Full" << endl;
+      //cout << "Node Full" << endl;
       return RC_NODE_FULL;
     }
 
@@ -517,7 +517,7 @@ RC BTNonLeafNode::insert(int key, PageId pid)
 
     // the leaf node is full with 127 pairs, buffer has 1024 bytes.
     if(num == 127) {
-      cout << "Node Full" << endl;
+      //cout << "Node Full" << endl;
       return RC_NODE_FULL;
     }
 
@@ -778,7 +778,7 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
    strncpy(firstpageid, buffer+4, 4);
    int fpageid = *(int*)firstpageid;
    cout << "First pid is: ";
-   cout << firstpageid << endl;
+   cout << fpageid << endl;
 
    for(int i=0; i<num; i++){
      char key[4];
