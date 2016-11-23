@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 #include "Bruinbase.h"
 #include "SqlEngine.h"
 #include "BTreeIndex.h"
@@ -67,22 +68,50 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       bool condition_max = false;
       int condition_max_val = -999;
 
+      int tmp;
+
       for (unsigned i = 0; i < cond.size(); i++) {
         switch (cond[i].comp) {
             case SelCond::EQ:
                 condition_equal = true;
                 condition_equal_val = atoi(cond[i].value);
                 break;
+
             case SelCond::NE:
                 break;
+
             case SelCond::GT:
+                condition_min = true;
+                // logic:
+                // if we already seen key>3, then condition_min_val = 4
+                // if next we run into key > 5, then tmp = 6
+                // new condition_min_val = max(4,6)
+                tmp = atoi(cond[i].value) + 1;
+                condition_min_val = max(tmp, condition_min_val);
                 break;
+
             case SelCond::LT:
+                condition_max = true;
+                // logic:
+                // if we already seen key < 5, then condition_max_val = 4
+                // if next we run into key < 3, then tmp = 2
+                // new condition_max_val = min(4,2)
+                tmp = atoi(cond[i].value) - 1;
+                condition_max_val = min(tmp, condition_max_val);
                 break;
+
             case SelCond::GE:
+                condition_min = true;
+                tmp = atoi(cond[i].value);
+                condition_min_val = max(tmp, condition_min_val);
                 break;
+
             case SelCond::LE:
+                condition_max = true;
+                tmp = atoi(cond[i].value);
+                condition_max_val = min(tmp, condition_max_val);
                 break;
+
         } //end switch cond[i].comp
       } //end for
 
@@ -94,18 +123,29 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
           b.locate(condition_equal_val, c);
           b.readForward(c, key, rid);
           rf.read(rid, key, value);
-          fprintf(stdout, "%d '%s'\n", key, value.c_str());
-          
+          printHelper(attr, key, value);
+      } else if (attr = 999)  {
+          puts("condition ne");
+          // this is placeholdler for NE condition
+      } else if (condition_min) {
+          puts("condition greater than");
+          // we are here if there is only a lower bound ( key>3 means min bound = 4 )
+          // start searching from condition_min_val (inclusive)
+
+      } else if (condition_max) {
+          puts("condition less than");
+          // search from first element to condition_max_val (inclusive)
+
+      } else if (condition_min && condition_max) {
+          puts("condition less than and greater than");
+          // example: key>3 and key<10
+          // search from condition_min_val (inclusive) to condition_max_val (inclusive)
 
       }
-      // todo: add the other conditions
 
-      // BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
-    //   while (b.readForward(c, key, rid ) == 0) {
-      //
-    //   }
-
-
+    rc = 0;
+    rf.close();
+    return rc;
 
   } else {
       puts("Associated index file does not exist. Proceeding with skeleton code implementation.");
@@ -317,4 +357,23 @@ RC SqlEngine::parseLoadLine(const string& line, int& key, string& value)
     if (loc != string::npos) { value.erase(loc); }
 
     return 0;
+}
+
+void SqlEngine::printHelper(int& attr, int& key, string& value) {
+    // attr = 1: key
+    // attr = 2: value
+    // attr = 3: * (print both columns)
+    // attr = 4: count(*) (not handled here)
+
+    switch (attr) {
+        case 1:
+          fprintf(stdout, "%d\n", key);
+          break;
+        case 2:
+          fprintf(stdout, "%s\n", value.c_str());
+          break;
+        case 3:
+          fprintf(stdout, "%d '%s'\n", key, value.c_str());
+          break;
+    }
 }
