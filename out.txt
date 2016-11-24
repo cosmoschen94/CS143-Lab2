@@ -1,0 +1,28 @@
+Bruinbase> Successfully wrote all tuples to RecordFile
+Bruinbase> Associated index file does exist!
+condition_equal: 1
+condition_min: 0
+condition_max: 0
+init condition equal
+condition_equal_val: 3992
+readForward success
+3992 'Strangers on a Train'
+readForward success
+272 'Baby Take a Bow'
+readForward success
+272 'Baby Take a Bow'
+readForward success
+1578 'G.I. Blues'
+readForward success
+2244 'King Creole'
+readForward success
+2342 'Last Ride, The'
+readForward success
+2634 'Matter of Life and Death, A'
+readForward success
+2965 'Notre Dame de Paris'
+readForward success
+3084 'Outside the Law'
+readForward success
+3992 'Strangers on a Train'
+Bruinbase> 

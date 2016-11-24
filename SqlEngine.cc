@@ -13,6 +13,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <queue>
 #include "Bruinbase.h"
 #include "SqlEngine.h"
 #include "BTreeIndex.h"
@@ -58,12 +59,15 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   IndexCursor c; // need this for b.locate later on
   if ( b.open(table + ".idx", 'r') == 0) {
       puts("Associated index file does exist!");
+      rid.pid = 0;
+      rid.sid = 0;
 
       bool condition_equal = false;
       int condition_equal_val = -999;
 
       bool condition_min = false;
       int condition_min_val = -999;
+      int absolute_smallest_key = -999;
 
       bool condition_max = false;
       int condition_max_val = -999;
@@ -71,77 +75,179 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       int tmp;
 
       for (unsigned i = 0; i < cond.size(); i++) {
-        switch (cond[i].comp) {
-            case SelCond::EQ:
-                condition_equal = true;
-                condition_equal_val = atoi(cond[i].value);
-                break;
+        if (cond[i].attr == 1) {
+            tmp = atoi(cond[i].value);
+            if (absolute_smallest_key == -999) {
+                absolute_smallest_key = tmp;
+            } else {
+                absolute_smallest_key = min(tmp, absolute_smallest_key);
+            }
 
-            case SelCond::NE:
-                break;
+            switch (cond[i].comp) {
+                case SelCond::EQ:
+                    condition_equal = true;
+                    condition_equal_val = atoi(cond[i].value);
+                    break;
 
-            case SelCond::GT:
-                condition_min = true;
-                // logic:
-                // if we already seen key>3, then condition_min_val = 4
-                // if next we run into key > 5, then tmp = 6
-                // new condition_min_val = max(4,6)
-                tmp = atoi(cond[i].value) + 1;
-                condition_min_val = max(tmp, condition_min_val);
-                break;
+                case SelCond::NE:
+                    break;
 
-            case SelCond::LT:
-                condition_max = true;
-                // logic:
-                // if we already seen key < 5, then condition_max_val = 4
-                // if next we run into key < 3, then tmp = 2
-                // new condition_max_val = min(4,2)
-                tmp = atoi(cond[i].value) - 1;
-                condition_max_val = min(tmp, condition_max_val);
-                break;
+                case SelCond::GT:
+                    condition_min = true;
+                    // logic:
+                    // if we already seen key>3, then condition_min_val = 4
+                    // if next we run into key > 5, then tmp = 6
+                    // new condition_min_val = max(4,6)
+                    tmp = atoi(cond[i].value) + 1;
+                    condition_min_val = max(tmp, condition_min_val);
+                    break;
 
-            case SelCond::GE:
-                condition_min = true;
-                tmp = atoi(cond[i].value);
-                condition_min_val = max(tmp, condition_min_val);
-                break;
+                case SelCond::LT:
+                    condition_max = true;
+                    // logic:
+                    // if we already seen key < 5, then condition_max_val = 4
+                    // if next we run into key < 3, then tmp = 2
+                    // new condition_max_val = min(4,2)
+                    tmp = atoi(cond[i].value) - 1;
+                    condition_max_val = min(tmp, condition_max_val);
+                    break;
 
-            case SelCond::LE:
-                condition_max = true;
-                tmp = atoi(cond[i].value);
-                condition_max_val = min(tmp, condition_max_val);
-                break;
+                case SelCond::GE:
+                    condition_min = true;
+                    tmp = atoi(cond[i].value);
+                    condition_min_val = max(tmp, condition_min_val);
+                    break;
 
-        } //end switch cond[i].comp
+                case SelCond::LE:
+                    condition_max = true;
+                    tmp = atoi(cond[i].value);
+                    condition_max_val = min(tmp, condition_max_val);
+                    break;
+
+            } //end switch cond[i].comp
+        }
+
       } //end for
 
-      // This case handles SELECT __ FROM ___ WHERE key=3
-      // We only have to search one tuple
+      //Initialization!
+      bool canTerminate = false;
+      count = 0;
+      cout << "condition_equal: " << condition_equal << endl;
+      cout << "condition_min: " << condition_min << endl;
+      cout << "condition_max: " << condition_max << endl;
       if (condition_equal) {
-          puts("condition equal");
-          // BTreeIndex::locate(int searchKey, IndexCursor& cursor)
+          puts("init condition equal");
+          cout << "condition_equal_val: " << condition_equal_val << endl;
           b.locate(condition_equal_val, c);
           b.readForward(c, key, rid);
           rf.read(rid, key, value);
+          count = 1;
+          canTerminate = true;
           printHelper(attr, key, value);
-      } else if (attr = 999)  {
-          puts("condition ne");
-          // this is placeholdler for NE condition
       } else if (condition_min) {
-          puts("condition greater than");
-          // we are here if there is only a lower bound ( key>3 means min bound = 4 )
-          // start searching from condition_min_val (inclusive)
-
-      } else if (condition_max) {
-          puts("condition less than");
-          // search from first element to condition_max_val (inclusive)
-
-      } else if (condition_min && condition_max) {
-          puts("condition less than and greater than");
-          // example: key>3 and key<10
-          // search from condition_min_val (inclusive) to condition_max_val (inclusive)
-
+          puts("init condition min");
+          b.locate(condition_min_val, c);
+      } else {
+          puts ("init condition 0");
+          b.locate(0, c);
       }
+
+      cout << "absolute smallest key: " << absolute_smallest_key << endl;
+      b.locate(0, c);
+      cout << "readForward: " << b.readForward(c, key, rid) << endl;
+      cout << "read: " << rf.read(rid, key, value) << endl;
+      fprintf(stdout, "%d '%s'\n", key, value.c_str());
+
+
+    // b.locate(absolute_smallest_key, c);
+    // int xx = 10;
+    // while (xx > 0) {
+    //     xx--;
+    //     if ((rc=b.readForward(c, key, rid)) < 0) {
+    //       cout << "readForward err" << endl;
+    //     }
+    //     if ((rc = rf.read(rid, key, value)) < 0) {
+    //         cout << "read err" << endl;
+    //     }
+    //     if(key == absolute_smallest_key) {
+    //         cout << "All done!" << endl;
+    //         break;
+    //     }
+    //     fprintf(stdout, "%d '%s'\n", key, value.c_str());
+    // }
+
+
+    //   b.locate(272, c);
+      //
+    //   for (int i = 0; i < 3; i++) {
+    //     if ((rc=b.readForward(c, key, rid)) < 0) {
+    //         cout << "readForward err" << endl;
+    //     }
+    //     if ((rc=rf.read(rid, key, value)) < 0) {
+    //         cout << "read err" << endl;
+    //     }
+    //     fprintf(stdout, "%d '%s'\n", key, value.c_str());
+    //   }
+
+    // this code works. Everything works as expected.
+    //   b.locate(condition_equal_val, c);
+    //   if ((rc=b.readForward(c, key, rid)) < 0) {
+    //       cout << "readForward err" << endl;
+    //   }
+    //   if ((rc=rf.read(rid, key, value)) < 0) {
+    //       cout << "read err" << endl;
+    //   }
+    //   fprintf(stdout, "%d '%s'\n", key, value.c_str());
+
+      // Now comment out the above code and uncomment the below code.
+      // this code doesn't work. readForward error
+        // b.locate(0, c);
+        // if ((rc=b.readForward(c, key, rid)) < 0) {
+        //     cout << "readForward err" << endl;
+        // }
+        // if ((rc=rf.read(rid, key, value)) < 0) {
+        //     cout << "read err" << endl;
+        // }
+        // fprintf(stdout, "%d '%s'\n", key, value.c_str());
+
+
+      // This while loop handles non-EQ queries
+    //   int diff;
+    //   while (b.readForward(c, key, rid) == 0 && canTerminate == false)  {
+    //       puts("while looping");
+    //       rf.read(rid, key, value);
+      //
+    //       // We'll iterate through B+ tree starting at our initial location
+    //       // I want to loop through everything, printing out every element
+    //       // For elements that don't match our query, skip print statement
+      //
+    //       for (unsigned i = 0; i < cond.size(); i++) {
+    //           if (cond[i].attr == 1) {
+    //               diff = atoi(cond[i].value);
+    //           } else if (cond[i].attr == 2) {
+    //               diff = strcmp(value.c_str(), cond[i].value);
+    //           }
+      //
+    //           if (cond[i].comp == SelCond::NE) {
+    //               if (diff == 0) {
+    //                   puts("condition NE - skip");
+    //                   // if we say key <> 3, and we find that key = 3 at the current cursor,
+    //                   // then don't print anything
+    //                   goto skip_to_end;
+    //               }
+    //           }
+    //           if (cond[i].comp == SelCond::)
+    //       }
+    //       // if no skipping, print current tuple
+    //       printHelper(attr, key, value);
+      //
+    //       skip_to_end:
+    //         cout << "Skipped!" << endl;
+    //   }
+
+
+
+
 
     rc = 0;
     rf.close();
@@ -150,74 +256,72 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   } else {
       puts("Associated index file does not exist. Proceeding with skeleton code implementation.");
 
+      // scan the table file from the beginning
+      rid.pid = rid.sid = 0;
+      count = 0;
+      while (rid < rf.endRid()) {
+        // read the tuple
+        if ((rc = rf.read(rid, key, value)) < 0) {
+          fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
+          goto exit_select;
+        }
 
+        // check the conditions on the tuple
+        for (unsigned i = 0; i < cond.size(); i++) {
+          // compute the difference between the tuple value and the condition value
+          switch (cond[i].attr) {
+          case 1:
+    	diff = key - atoi(cond[i].value);
+    	break;
+          case 2:
+    	diff = strcmp(value.c_str(), cond[i].value);
+    	break;
+          }
 
-  // scan the table file from the beginning
-  rid.pid = rid.sid = 0;
-  count = 0;
-  while (rid < rf.endRid()) {
-    // read the tuple
-    if ((rc = rf.read(rid, key, value)) < 0) {
-      fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
-      goto exit_select;
-    }
+          // skip the tuple if any condition is not met
+          switch (cond[i].comp) {
+          case SelCond::EQ:
+    	if (diff != 0) goto next_tuple;
+    	break;
+          case SelCond::NE:
+    	if (diff == 0) goto next_tuple;
+    	break;
+          case SelCond::GT:
+    	if (diff <= 0) goto next_tuple;
+    	break;
+          case SelCond::LT:
+    	if (diff >= 0) goto next_tuple;
+    	break;
+          case SelCond::GE:
+    	if (diff < 0) goto next_tuple;
+    	break;
+          case SelCond::LE:
+    	if (diff > 0) goto next_tuple;
+    	break;
+          }
+        }
 
-    // check the conditions on the tuple
-    for (unsigned i = 0; i < cond.size(); i++) {
-      // compute the difference between the tuple value and the condition value
-      switch (cond[i].attr) {
-      case 1:
-	diff = key - atoi(cond[i].value);
-	break;
-      case 2:
-	diff = strcmp(value.c_str(), cond[i].value);
-	break;
+        // the condition is met for the tuple.
+        // increase matching tuple counter
+        count++;
+
+        // print the tuple
+        switch (attr) {
+        case 1:  // SELECT key
+          fprintf(stdout, "%d\n", key);
+          break;
+        case 2:  // SELECT value
+          fprintf(stdout, "%s\n", value.c_str());
+          break;
+        case 3:  // SELECT *
+          fprintf(stdout, "%d '%s'\n", key, value.c_str());
+          break;
+        }
+
+        // move to the next tuple
+        next_tuple:
+        ++rid;
       }
-
-      // skip the tuple if any condition is not met
-      switch (cond[i].comp) {
-      case SelCond::EQ:
-	if (diff != 0) goto next_tuple;
-	break;
-      case SelCond::NE:
-	if (diff == 0) goto next_tuple;
-	break;
-      case SelCond::GT:
-	if (diff <= 0) goto next_tuple;
-	break;
-      case SelCond::LT:
-	if (diff >= 0) goto next_tuple;
-	break;
-      case SelCond::GE:
-	if (diff < 0) goto next_tuple;
-	break;
-      case SelCond::LE:
-	if (diff > 0) goto next_tuple;
-	break;
-      }
-    }
-
-    // the condition is met for the tuple.
-    // increase matching tuple counter
-    count++;
-
-    // print the tuple
-    switch (attr) {
-    case 1:  // SELECT key
-      fprintf(stdout, "%d\n", key);
-      break;
-    case 2:  // SELECT value
-      fprintf(stdout, "%s\n", value.c_str());
-      break;
-    case 3:  // SELECT *
-      fprintf(stdout, "%d '%s'\n", key, value.c_str());
-      break;
-    }
-
-    // move to the next tuple
-    next_tuple:
-    ++rid;
-  }
 
   } //end else from opening index - todo: is this in the right area?
 
