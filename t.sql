@@ -1,2 +1,2 @@
 LOAD xsmall FROM 'xsmall.del' WITH INDEX
-SELECT * FROM xsmall WHERE value='King Creole'
+SELECT * FROM xsmall WHERE key=1578 AND value<>'G.I. Blues'
