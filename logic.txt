@@ -1,0 +1,14 @@
+
+
+
+For each condition in the query (example: key > 3 AND value < 100):
+    Find out if there's an "equals" operator
+    Find out if there's a "not-equals" operator
+
+    Find the absolute minimum key
+    Find the absolute minimum value
+
+    Find the absolute maximum key
+    Find the absolute maximum value
+
+If there's a condition_equal...

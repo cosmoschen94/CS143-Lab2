@@ -39,60 +39,60 @@ RC SqlEngine::run(FILE* commandline)
 
 RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 {
-  RecordFile rf;   // RecordFile containing the table
-  RecordId   rid;  // record cursor for table scanning
+    RecordFile rf;   // RecordFile containing the table
+    RecordId   rid;  // record cursor for table scanning
 
-  RC     rc;
-  int    key;
-  string value;
-  int    count;
-  int    diff;
+    RC     rc;
+    int    key;
+    string value;
+    int    count;
+    int    diff;
 
-  // open the table file
-  if ((rc = rf.open(table + ".tbl", 'r')) < 0) {
+    // open the table file
+    if ((rc = rf.open(table + ".tbl", 'r')) < 0) {
     fprintf(stderr, "Error: table %s does not exist\n", table.c_str());
     return rc;
-  }
+    }
 
-  // attempt to open the corresponding index file
-  BTreeIndex b;
-  IndexCursor c; // need this for b.locate later on
-  if ( b.open(table + ".idx", 'r') == 0) {
-      puts("Associated index file does exist!");
-      rid.pid = 0;
-      rid.sid = 0;
+    // attempt to open the corresponding index file
+    BTreeIndex b;
+    IndexCursor c; // need this for b.locate later on
+    if ( b.open(table + ".idx", 'r') == 0) {
+        puts("Associated index file does exist!");
+        rid.pid = 0;
+        rid.sid = 0;
 
-      bool condition_equal = false;
-      int condition_equal_val = -999;
+        bool condition_equal = false;
+        int condition_equal_val = -999;
 
-      bool condition_min = false;
-      int condition_min_val = -999;
-      int absolute_smallest_key = -999;
+        bool condition_min = false;
+        int condition_min_val = -999;
+        int absolute_smallest_key = -999;
 
-      bool condition_max = false;
-      int condition_max_val = -999;
+        bool condition_max = false;
+        int condition_max_val = -999;
 
-      int tmp;
+        int tmp;
 
-      for (unsigned i = 0; i < cond.size(); i++) {
-        if (cond[i].attr == 1) {
-            tmp = atoi(cond[i].value);
-            if (absolute_smallest_key == -999) {
-                absolute_smallest_key = tmp;
-            } else {
-                absolute_smallest_key = min(tmp, absolute_smallest_key);
-            }
+        for (unsigned i = 0; i < cond.size(); i++) {
+            if (cond[i].attr == 1) {
+                tmp = atoi(cond[i].value);
+                if (absolute_smallest_key == -999) {
+                    absolute_smallest_key = tmp;
+                } else {
+                    absolute_smallest_key = min(tmp, absolute_smallest_key);
+                }
 
-            switch (cond[i].comp) {
-                case SelCond::EQ:
+                switch (cond[i].comp) {
+                    case SelCond::EQ:
                     condition_equal = true;
                     condition_equal_val = atoi(cond[i].value);
                     break;
 
-                case SelCond::NE:
+                    case SelCond::NE:
                     break;
 
-                case SelCond::GT:
+                    case SelCond::GT:
                     condition_min = true;
                     // logic:
                     // if we already seen key>3, then condition_min_val = 4
@@ -102,7 +102,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
                     condition_min_val = max(tmp, condition_min_val);
                     break;
 
-                case SelCond::LT:
+                    case SelCond::LT:
                     condition_max = true;
                     // logic:
                     // if we already seen key < 5, then condition_max_val = 4
@@ -112,95 +112,95 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
                     condition_max_val = min(tmp, condition_max_val);
                     break;
 
-                case SelCond::GE:
+                    case SelCond::GE:
                     condition_min = true;
                     tmp = atoi(cond[i].value);
                     condition_min_val = max(tmp, condition_min_val);
                     break;
 
-                case SelCond::LE:
+                    case SelCond::LE:
                     condition_max = true;
                     tmp = atoi(cond[i].value);
                     condition_max_val = min(tmp, condition_max_val);
                     break;
 
-            } //end switch cond[i].comp
+                } //end switch cond[i].comp
+            } //end if(cond[i].attr == 1)
+
+        } //end for
+
+        //Initialization!
+        bool canTerminate = false;
+        count = 0;
+        cout << "condition_equal: " << condition_equal << endl;
+        cout << "condition_min: " << condition_min << endl;
+        cout << "condition_max: " << condition_max << endl;
+        if (condition_equal) {
+            puts("init condition equal");
+            cout << "condition_equal_val: " << condition_equal_val << endl;
+            b.locate(condition_equal_val, c);
+            b.readForward(c, key, rid);
+            rf.read(rid, key, value);
+            count = 1;
+            canTerminate = true;
+            printHelper(attr, key, value);
+        } else if (condition_min) {
+            puts("init condition min");
+            b.locate(condition_min_val, c);
+        } else {
+            puts ("init condition 0");
+            b.locate(0, c);
+        }
+        if (canTerminate == false) {
+            cout << "absolute smallest key: " << absolute_smallest_key << endl;
+            b.locate(0, c);
+            cout << "readForward: " << b.readForward(c, key, rid) << endl;
+            cout << "read: " << rf.read(rid, key, value) << endl;
+            fprintf(stdout, "%d '%s'\n", key, value.c_str());
         }
 
-      } //end for
-
-      //Initialization!
-      bool canTerminate = false;
-      count = 0;
-      cout << "condition_equal: " << condition_equal << endl;
-      cout << "condition_min: " << condition_min << endl;
-      cout << "condition_max: " << condition_max << endl;
-      if (condition_equal) {
-          puts("init condition equal");
-          cout << "condition_equal_val: " << condition_equal_val << endl;
-          b.locate(condition_equal_val, c);
-          b.readForward(c, key, rid);
-          rf.read(rid, key, value);
-          count = 1;
-          canTerminate = true;
-          printHelper(attr, key, value);
-      } else if (condition_min) {
-          puts("init condition min");
-          b.locate(condition_min_val, c);
-      } else {
-          puts ("init condition 0");
-          b.locate(0, c);
-      }
-
-      cout << "absolute smallest key: " << absolute_smallest_key << endl;
-      b.locate(0, c);
-      cout << "readForward: " << b.readForward(c, key, rid) << endl;
-      cout << "read: " << rf.read(rid, key, value) << endl;
-      fprintf(stdout, "%d '%s'\n", key, value.c_str());
+        // b.locate(absolute_smallest_key, c);
+        // int xx = 10;
+        // while (xx > 0) {
+        //     xx--;
+        //     if ((rc=b.readForward(c, key, rid)) < 0) {
+        //       cout << "readForward err" << endl;
+        //     }
+        //     if ((rc = rf.read(rid, key, value)) < 0) {
+        //         cout << "read err" << endl;
+        //     }
+        //     if(key == absolute_smallest_key) {
+        //         cout << "All done!" << endl;
+        //         break;
+        //     }
+        //     fprintf(stdout, "%d '%s'\n", key, value.c_str());
+        // }
 
 
-    // b.locate(absolute_smallest_key, c);
-    // int xx = 10;
-    // while (xx > 0) {
-    //     xx--;
-    //     if ((rc=b.readForward(c, key, rid)) < 0) {
-    //       cout << "readForward err" << endl;
-    //     }
-    //     if ((rc = rf.read(rid, key, value)) < 0) {
-    //         cout << "read err" << endl;
-    //     }
-    //     if(key == absolute_smallest_key) {
-    //         cout << "All done!" << endl;
-    //         break;
-    //     }
-    //     fprintf(stdout, "%d '%s'\n", key, value.c_str());
-    // }
+        //   b.locate(272, c);
+        //
+        //   for (int i = 0; i < 3; i++) {
+        //     if ((rc=b.readForward(c, key, rid)) < 0) {
+        //         cout << "readForward err" << endl;
+        //     }
+        //     if ((rc=rf.read(rid, key, value)) < 0) {
+        //         cout << "read err" << endl;
+        //     }
+        //     fprintf(stdout, "%d '%s'\n", key, value.c_str());
+        //   }
 
+        // this code works. Everything works as expected.
+        //   b.locate(condition_equal_val, c);
+        //   if ((rc=b.readForward(c, key, rid)) < 0) {
+        //       cout << "readForward err" << endl;
+        //   }
+        //   if ((rc=rf.read(rid, key, value)) < 0) {
+        //       cout << "read err" << endl;
+        //   }
+        //   fprintf(stdout, "%d '%s'\n", key, value.c_str());
 
-    //   b.locate(272, c);
-      //
-    //   for (int i = 0; i < 3; i++) {
-    //     if ((rc=b.readForward(c, key, rid)) < 0) {
-    //         cout << "readForward err" << endl;
-    //     }
-    //     if ((rc=rf.read(rid, key, value)) < 0) {
-    //         cout << "read err" << endl;
-    //     }
-    //     fprintf(stdout, "%d '%s'\n", key, value.c_str());
-    //   }
-
-    // this code works. Everything works as expected.
-    //   b.locate(condition_equal_val, c);
-    //   if ((rc=b.readForward(c, key, rid)) < 0) {
-    //       cout << "readForward err" << endl;
-    //   }
-    //   if ((rc=rf.read(rid, key, value)) < 0) {
-    //       cout << "read err" << endl;
-    //   }
-    //   fprintf(stdout, "%d '%s'\n", key, value.c_str());
-
-      // Now comment out the above code and uncomment the below code.
-      // this code doesn't work. readForward error
+        // Now comment out the above code and uncomment the below code.
+        // this code doesn't work. readForward error
         // b.locate(0, c);
         // if ((rc=b.readForward(c, key, rid)) < 0) {
         //     cout << "readForward err" << endl;
@@ -211,47 +211,47 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         // fprintf(stdout, "%d '%s'\n", key, value.c_str());
 
 
-      // This while loop handles non-EQ queries
-    //   int diff;
-    //   while (b.readForward(c, key, rid) == 0 && canTerminate == false)  {
-    //       puts("while looping");
-    //       rf.read(rid, key, value);
-      //
-    //       // We'll iterate through B+ tree starting at our initial location
-    //       // I want to loop through everything, printing out every element
-    //       // For elements that don't match our query, skip print statement
-      //
-    //       for (unsigned i = 0; i < cond.size(); i++) {
-    //           if (cond[i].attr == 1) {
-    //               diff = atoi(cond[i].value);
-    //           } else if (cond[i].attr == 2) {
-    //               diff = strcmp(value.c_str(), cond[i].value);
-    //           }
-      //
-    //           if (cond[i].comp == SelCond::NE) {
-    //               if (diff == 0) {
-    //                   puts("condition NE - skip");
-    //                   // if we say key <> 3, and we find that key = 3 at the current cursor,
-    //                   // then don't print anything
-    //                   goto skip_to_end;
-    //               }
-    //           }
-    //           if (cond[i].comp == SelCond::)
-    //       }
-    //       // if no skipping, print current tuple
-    //       printHelper(attr, key, value);
-      //
-    //       skip_to_end:
-    //         cout << "Skipped!" << endl;
-    //   }
+        // This while loop handles non-EQ queries
+        //   int diff;
+        //   while (b.readForward(c, key, rid) == 0 && canTerminate == false)  {
+        //       puts("while looping");
+        //       rf.read(rid, key, value);
+        //
+        //       // We'll iterate through B+ tree starting at our initial location
+        //       // I want to loop through everything, printing out every element
+        //       // For elements that don't match our query, skip print statement
+        //
+        //       for (unsigned i = 0; i < cond.size(); i++) {
+        //           if (cond[i].attr == 1) {
+        //               diff = atoi(cond[i].value);
+        //           } else if (cond[i].attr == 2) {
+        //               diff = strcmp(value.c_str(), cond[i].value);
+        //           }
+        //
+        //           if (cond[i].comp == SelCond::NE) {
+        //               if (diff == 0) {
+        //                   puts("condition NE - skip");
+        //                   // if we say key <> 3, and we find that key = 3 at the current cursor,
+        //                   // then don't print anything
+        //                   goto skip_to_end;
+        //               }
+        //           }
+        //           if (cond[i].comp == SelCond::)
+        //       }
+        //       // if no skipping, print current tuple
+        //       printHelper(attr, key, value);
+        //
+        //       skip_to_end:
+        //         cout << "Skipped!" << endl;
+        //   }
 
 
 
 
 
-    rc = 0;
-    rf.close();
-    return rc;
+        rc = 0;
+        rf.close();
+        return rc;
 
   } else {
       puts("Associated index file does not exist. Proceeding with skeleton code implementation.");
