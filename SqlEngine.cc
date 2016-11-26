@@ -66,7 +66,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         int condition_equal_val = -999;
 
         bool condition_min = false;
-        int condition_min_val = -999;
+        int condition_min_val = 0;
 
         bool condition_max = false;
         int condition_max_val = -999;
@@ -74,7 +74,8 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         //int absolute_smallest_key = 0;
 
         int tmp;
-
+        bool canTerminate = false;
+        count = 0;
         for (unsigned i = 0; i < cond.size(); i++) {
             if (cond[i].attr == 1) {
                 tmp = atoi(cond[i].value);
@@ -86,6 +87,11 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
                 switch (cond[i].comp) {
                     case SelCond::EQ:
+                    if (condition_equal && condition_equal_val != atoi(cond[i].value)) {
+                        puts("two unique key equal statements. terminate now");
+                        canTerminate = true;
+                        goto skip_to_end;
+                    }
                     condition_equal = true;
                     condition_equal_val = atoi(cond[i].value);
                     break;
@@ -110,7 +116,11 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
                     // if next we run into key < 3, then tmp = 2
                     // new condition_max_val = min(4,2)
                     tmp = atoi(cond[i].value) - 1;
-                    condition_max_val = min(tmp, condition_max_val);
+                    if (condition_max_val == -999) {
+                        condition_max_val = tmp;
+                    } else {
+                        condition_max_val = min(tmp, condition_max_val);
+                    }
                     break;
 
                     case SelCond::GE:
@@ -122,7 +132,11 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
                     case SelCond::LE:
                     condition_max = true;
                     tmp = atoi(cond[i].value);
-                    condition_max_val = min(tmp, condition_max_val);
+                    if (condition_max_val == -999) {
+                        condition_max_val = tmp;
+                    } else {
+                        condition_max_val = min(tmp, condition_max_val);
+                    }
                     break;
 
                 } //end switch cond[i].comp
@@ -131,20 +145,37 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         } //end for
 
         //Initialization!
-        bool canTerminate = false;
-        count = 0;
+
+
         cout << "condition_equal: " << condition_equal << endl;
         cout << "condition_min: " << condition_min << endl;
         cout << "condition_max: " << condition_max << endl;
         if (condition_equal) {
             puts("init condition equal");
             cout << "condition_equal_val: " << condition_equal_val << endl;
-            b.locate(condition_equal_val, c);
-            b.readForward(c, key, rid);
-            rf.read(rid, key, value);
-            count = 1;
+            if (b.locate(condition_equal_val, c)<0) {
+                puts("err locating");
+            }
+            if (b.readForward(c, key, rid)<0) {
+                puts("err readForward");
+            }
+            if (rf.read(rid, key, value)<0) {
+                puts("err read");
+            }
+            diff = key - condition_equal_val;
+            if (diff != 0) {
+                puts("no match");
+            } else if (condition_equal && condition_max && condition_equal_val > condition_max_val) {
+                puts("conflict 1");
+            } else if (condition_equal && condition_min && condition_equal_val < condition_min_val) {
+                puts("conflict 2");
+            } else {
+                count = 1;
+                printHelper(attr, key, value);
+            }
+
             canTerminate = true;
-            printHelper(attr, key, value);
+
         } else if (condition_min) {
             puts("init condition min");
             b.locate(condition_min_val, c);
@@ -155,12 +186,19 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
         b.locate(max(0, condition_min_val), c);
         cout << "condition_min_val: " << condition_min_val << endl;
+        cout << "condition_max_val: " << condition_max_val << endl;
         cout << "\n-----\n" << endl;
 
         while (b.readForward(c, key, rid) == 0 && canTerminate == false) {
             if ((rc = rf.read(rid, key, value)) < 0) {
                 cout << "read err" << endl;
             }
+            // for "key < 1000" type constraints we can check immediately
+            if (key > condition_max_val && condition_max_val != -999) {
+                puts("key exceeds max limits - skipping.");
+                goto skip_printing;
+            }
+
             int diff;
 
             for (unsigned i = 0; i < cond.size(); i++) {
@@ -186,8 +224,28 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
                     // if we say key <> 3, and we find that key = 3 at the current cursor,
                     // then don't print anything
                     goto skip_printing;
-
                 }
+
+                if (cond[i].comp == SelCond::GT && diff <= 0) {
+                    puts("condition GT - skip");
+                    goto skip_printing;
+                }
+
+                if (cond[i].comp == SelCond::GE && diff < 0) {
+                    puts("condition GE - skip");
+                    goto skip_printing;
+                }
+
+                if (cond[i].comp == SelCond::LT && diff >= 0) {
+                    puts("condition LT - skip");
+                    goto skip_printing;
+                }
+
+                if (cond[i].comp == SelCond::LE && diff > 0) {
+                    puts("condition LE - skip");
+                    goto skip_printing;
+                }
+
             } //end for
 
             count++;
@@ -197,6 +255,8 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
                 cout << "";
 
         }
+        skip_to_end:
+            cout << "";
 
   } else {
       puts("Associated index file does not exist. Proceeding with skeleton code implementation.");

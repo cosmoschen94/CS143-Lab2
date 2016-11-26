@@ -16,3 +16,6 @@ SELECT * FROM xsmall WHERE key>271 AND key<=272 AND key<300000
 SELECT * FROM xsmall WHERE key=272 AND key<>272
 SELECT * FROM xsmall WHERE key=272 AND value<>"Superman"
 SELECT * FROM xsmall WHERE key=272 AND value<>"Baby Take a Bow"
+LOAD small FROM 'small.del' WITH INDEX
+SELECT COUNT(*) FROM small
+SELECT * FROM small WHERE key > 100 AND key < 500
