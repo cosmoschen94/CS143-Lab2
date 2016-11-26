@@ -151,30 +151,30 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             puts ("init condition 0");
             b.locate(0, c);
         }
-        if (canTerminate == false) {
-            cout << "absolute smallest key: " << absolute_smallest_key << endl;
-            b.locate(0, c);
-            cout << "readForward: " << b.readForward(c, key, rid) << endl;
-            cout << "read: " << rf.read(rid, key, value) << endl;
-            fprintf(stdout, "%d '%s'\n", key, value.c_str());
-        }
-
-        // b.locate(absolute_smallest_key, c);
-        // int xx = 10;
-        // while (xx > 0) {
-        //     xx--;
-        //     if ((rc=b.readForward(c, key, rid)) < 0) {
-        //       cout << "readForward err" << endl;
-        //     }
-        //     if ((rc = rf.read(rid, key, value)) < 0) {
-        //         cout << "read err" << endl;
-        //     }
-        //     if(key == absolute_smallest_key) {
-        //         cout << "All done!" << endl;
-        //         break;
-        //     }
+        // if (canTerminate == false) {
+        //     cout << "absolute smallest key: " << absolute_smallest_key << endl;
+        //     b.locate(0, c);
+        //     cout << "readForward: " << b.readForward(c, key, rid) << endl;
+        //     cout << "read: " << rf.read(rid, key, value) << endl;
         //     fprintf(stdout, "%d '%s'\n", key, value.c_str());
         // }
+
+        b.locate(0, c);
+        int xx = 10;
+        while (xx > 0) {
+            xx--;
+            if ((rc=b.readForward(c, key, rid)) < 0) {
+              cout << "readForward err" << endl;
+            }
+            if ((rc = rf.read(rid, key, value)) < 0) {
+                cout << "read err" << endl;
+            }
+            // if(key == absolute_smallest_key) {
+            //     cout << "All done!" << endl;
+            //     break;
+            // }
+            fprintf(stdout, "%d '%s'\n", key, value.c_str());
+        }
 
 
         //   b.locate(272, c);

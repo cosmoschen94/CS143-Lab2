@@ -473,7 +473,7 @@ RC BTreeIndex::recursive_locate(int searchKey, IndexCursor& cursor, int height, 
 
 
         res = l.locate(searchKey, eid); // eid instead of pid in this case: see BTLeafNode::read implementation
-        if (res != 0 ) return RC_NO_SUCH_RECORD; // toDo: find what error code to return
+        // if (res != 0 ) return RC_NO_SUCH_RECORD; // toDo: find what error code to return
 
         // IndexCursor has two parameters: pid and eid (see BTreeIndex.h)
         cursor.pid = pid;
@@ -532,6 +532,9 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
     if (nextEid + 1 >= l.getKeyCount()) {
         nextEid = 0;
         nextPid = l.getNextNodePtr();
+        if(nextPid == RC_END_OF_TREE){
+          return RC_END_OF_TREE;
+        }
     } else {
         nextEid++;
     }

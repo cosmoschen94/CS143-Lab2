@@ -403,7 +403,12 @@ PageId BTLeafNode::getNextNodePtr()
 {
   char pid[4];
   strncpy(pid, buffer+4, 4);
-  return *(int*)pid;
+  int nextPid = *(int*)pid;
+  if(nextPid == 0){
+    return RC_END_OF_TREE;
+  }
+
+  return nextPid;
 }
 
 /*

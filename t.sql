@@ -1,2 +1,2 @@
 LOAD xsmall FROM 'xsmall.del' WITH INDEX
-SELECT * FROM xsmall WHERE key>2965
+SELECT * FROM xsmall WHERE key>2964
