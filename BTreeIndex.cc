@@ -513,6 +513,10 @@ RC BTreeIndex::recursive_locate(int searchKey, IndexCursor& cursor, int height, 
  */
 RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
 {
+    if(cursor.pid == RC_END_OF_TREE){
+      return RC_END_OF_TREE;
+    }
+
     BTLeafNode l;
     RC res = l.read(cursor.pid, pf);
 
@@ -532,9 +536,7 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
     if (nextEid + 1 >= l.getKeyCount()) {
         nextEid = 0;
         nextPid = l.getNextNodePtr();
-        if(nextPid == RC_END_OF_TREE){
-          return RC_END_OF_TREE;
-        }
+
     } else {
         nextEid++;
     }
