@@ -37,8 +37,3 @@
 
 *.idx
 *.tbl
-
-*.tab.c
-*.tab.h
-*.sql.c
-bruinbase
