@@ -32,6 +32,7 @@ BTreeIndex::BTreeIndex()
     // update buffer
     memcpy(buffer, &rootPid, 4);
     memcpy(buffer+4, &treeHeight, 4);
+    // pf.write(0, buffer);
 }
 
 /*
@@ -80,6 +81,9 @@ RC BTreeIndex::open(const string& indexname, char mode)
         if(temp_rootpid != 0 && temp_treeHeight != 0){
           rootPid = temp_rootpid;
           treeHeight = temp_treeHeight;
+          // update buffer
+          memcpy(buffer, &rootPid, 4);
+          memcpy(buffer+4, &treeHeight, 4);
         }
     }
 
@@ -94,7 +98,7 @@ RC BTreeIndex::open(const string& indexname, char mode)
 RC BTreeIndex::close()
 {
     memcpy(buffer, &rootPid, 4);
-    memcpy(buffer, &treeHeight, 4);
+    memcpy(buffer+4, &treeHeight, 4);
 
     RC res = pf.write(0, buffer);
     if (res != 0 ) return res;
@@ -111,9 +115,10 @@ RC BTreeIndex::close()
 RC BTreeIndex::insert(int key, const RecordId& rid)
 {
 
-    if(key < 0){
-      return RC_INVALID_ATTRIBUTE;
-    }
+    // remove this because key can be negative
+    // if(key < 0){
+    //   return RC_INVALID_ATTRIBUTE;
+    // }
 
     // the tree is empty
     if(rootPid == -1) {
@@ -271,12 +276,12 @@ RC BTreeIndex::recursive_insert(int key, const RecordId& rid, int height, PageId
 
       // lower level leafNode overflow
       if(leafNodeOverflow) {
-        BTNonLeafNode nl;
-        RC result = nl.read(pid, pf);
-        if(result){
-          // error occurs
-          return result;
-        }
+        // BTNonLeafNode nl;
+        // RC result = nl.read(pid, pf);
+        // if(result){
+        //   // error occurs
+        //   return result;
+        // }
 
         // insert success
         if(nl.insert(siblingKey, siblingPid) == 0){
@@ -342,12 +347,12 @@ RC BTreeIndex::recursive_insert(int key, const RecordId& rid, int height, PageId
 
       // lower level nonLeafNode overflow
       else if(nonLeafNodeOverflow) {
-        BTNonLeafNode nl;
-        RC result = nl.read(pid, pf);
-        if(result){
-          // error occurs
-          return result;
-        }
+        // BTNonLeafNode nl;
+        // RC result = nl.read(pid, pf);
+        // if(result){
+        //   // error occurs
+        //   return result;
+        // }
 
         // insert success
         if(nl.insert(siblingKey, siblingPid) == 0){

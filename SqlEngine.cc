@@ -50,8 +50,8 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
     // open the table file
     if ((rc = rf.open(table + ".tbl", 'r')) < 0) {
-    fprintf(stderr, "Error: table %s does not exist\n", table.c_str());
-    return rc;
+      fprintf(stderr, "Error: table %s does not exist\n", table.c_str());
+      return rc;
     }
 
     // attempt to open the corresponding index file
@@ -371,6 +371,8 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
       return -1;
   }
 
+  // debugging purpose
+  int gdb = 0;
   while (getline(infile, line)) {
     int tryParsing = parseLoadLine(line, key, value);
     int tryAppending = rf.append(key, value, rid);
@@ -385,13 +387,16 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
 
     // Part D: if index == true then try inserting into BTreeIndex
     // BTreeIndex::insert(int key, const RecordId& rid)
+    int tryInserting;
     if (index) {
-        int tryInserting = b.insert(key, rid);
+        tryInserting = b.insert(key, rid);
         if (tryInserting < 0) {
             puts("Error inserting to BTreeIndex");
             return -1;
         }
     }
+
+    gdb++;
 
   }
 
@@ -401,6 +406,9 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
   puts("Successfully wrote all tuples to RecordFile");
 
   infile.close();
+
+  // Close RecordFile
+  rf.close();
   /*
   if (index) {
       // part D: if the third parameter index is set to true, Bruinbase creates the corresponding B+tree index on the key column of the table. The index file should be named 'tblname.idx' where tblname is the name of the table, and created in the current working directory. Essentially, you have to change the load function, such that if index is true, for every tuple inserted into the table, you obtain RecordId of the inserted tuple, and insert a corresponding (key, RecordId) pair to the B+tree of the table.
