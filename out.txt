@@ -20,10 +20,15 @@ condition_max_val: 2499
 
 -----
 
+diff: -2228
 272 'Baby Take a Bow'
+diff: -922
 1578 'G.I. Blues'
+diff: -256
 2244 'King Creole'
+diff: -158
 2342 'Last Ride, The'
+key exceeds max limits - skipping.
 Bruinbase> Bruinbase> Successfully wrote all tuples to RecordFile
 Bruinbase> Associated index file does exist!
 condition_equal: 0
@@ -46,12 +51,25 @@ condition_max_val: 499
 
 -----
 
+diff: 73
+diff: -327
 173 'Angel Levine, The'
+diff: 75
+diff: -325
 175 'Angel Unchained'
+diff: 172
+diff: -228
 272 'Baby Take a Bow'
+diff: 203
+diff: -197
 303 'Bananas'
+diff: 295
+diff: -105
 395 'Big Jake'
+diff: 389
+diff: -11
 489 'Blue Hawaii'
+key exceeds max limits - skipping.
 Bruinbase> Bruinbase> Successfully wrote all tuples to RecordFile
 Bruinbase> Associated index file does exist!
 condition_equal: 0
@@ -98,34 +116,63 @@ condition_max_val: -999
 
 -----
 
+diff: 6
 4506 'Waterworld'
+diff: 15
 4515 'Wedding Party, The'
+diff: 24
 4524 'Welcome to the Dollhouse'
+diff: 31
 4531 'Wharf Rat, The'
+diff: 46
 4546 'When Night Is Falling'
+diff: 58
 4558 'While You Were Sleeping'
+diff: 60
 4560 'White Mans Burden'
+diff: 65
 4565 'White Wolves II: Legend of the Wild'
+diff: 70
 4570 'Who Is Harry Kellerman and Why Is He Saying Those Terrible Things About Me?'
+diff: 79
 4579 'Widows Kiss'
+diff: 81
 4581 'Wigstock: The Movie'
+diff: 83
 4583 'Wild Angels, The'
+diff: 84
 4584 'Wild Bill'
+diff: 89
 4589 'Wild Ride, The'
+diff: 101
 4601 'Windrunner'
+diff: 119
 4619 'Witch Hunt'
+diff: 120
 4620 'Witchboard III: The Possession'
+diff: 121
 4621 'Witchcraft 7: Judgement Hour'
+diff: 133
 4633 'Wizards of the Demon Sword'
+diff: 137
 4637 'Wolves, The'
+diff: 157
 4657 'Wrecking Crew, The'
+diff: 160
 4660 'Wrong Woman, The'
+diff: 173
 4673 'Yao a yao yao dao waipo qiao'
+diff: 183
 4683 'Young Poisoners Handbook, The'
+diff: 200
 4700 'Zooman'
+diff: 210
 4710 'By Way of the Stars'
+diff: 227
 4727 'Sabrina, the Teenage Witch'
+diff: 232
 4732 '¡Dispara!'
+diff: 233
 4733 'la folie'
 Bruinbase> Associated index file does exist!
 condition_equal: 0
@@ -137,34 +184,92 @@ condition_max_val: -999
 
 -----
 
+diff: 6
+diff: 4506
 4506 'Waterworld'
+diff: 15
+diff: 4515
 4515 'Wedding Party, The'
+diff: 24
+diff: 4524
 4524 'Welcome to the Dollhouse'
+diff: 31
+diff: 4531
 4531 'Wharf Rat, The'
+diff: 46
+diff: 4546
 4546 'When Night Is Falling'
+diff: 58
+diff: 4558
 4558 'While You Were Sleeping'
+diff: 60
+diff: 4560
 4560 'White Mans Burden'
+diff: 65
+diff: 4565
 4565 'White Wolves II: Legend of the Wild'
+diff: 70
+diff: 4570
 4570 'Who Is Harry Kellerman and Why Is He Saying Those Terrible Things About Me?'
+diff: 79
+diff: 4579
 4579 'Widows Kiss'
+diff: 81
+diff: 4581
 4581 'Wigstock: The Movie'
+diff: 83
+diff: 4583
 4583 'Wild Angels, The'
+diff: 84
+diff: 4584
 4584 'Wild Bill'
+diff: 89
+diff: 4589
 4589 'Wild Ride, The'
+diff: 101
+diff: 4601
 4601 'Windrunner'
+diff: 119
+diff: 4619
 4619 'Witch Hunt'
+diff: 120
+diff: 4620
 4620 'Witchboard III: The Possession'
+diff: 121
+diff: 4621
 4621 'Witchcraft 7: Judgement Hour'
+diff: 133
+diff: 4633
 4633 'Wizards of the Demon Sword'
+diff: 137
+diff: 4637
 4637 'Wolves, The'
+diff: 157
+diff: 4657
 4657 'Wrecking Crew, The'
+diff: 160
+diff: 4660
 4660 'Wrong Woman, The'
+diff: 173
+diff: 4673
 4673 'Yao a yao yao dao waipo qiao'
+diff: 183
+diff: 4683
 4683 'Young Poisoners Handbook, The'
+diff: 200
+diff: 4700
 4700 'Zooman'
+diff: 210
+diff: 4710
 4710 'By Way of the Stars'
+diff: 227
+diff: 4727
 4727 'Sabrina, the Teenage Witch'
+diff: 232
+diff: 4732
 4732 '¡Dispara!'
+diff: 233
+diff: 4733
 4733 'la folie'
 Bruinbase> Bruinbase> Successfully wrote all tuples to RecordFile
 Bruinbase> Associated index file does exist!
@@ -200,118 +305,325 @@ condition_max_val: 499
 
 -----
 
+diff: 2
+diff: -98
+diff: 302
+diff: -3999598
 402 'Big Squeeze, The'
+diff: 3
+diff: -97
+diff: 303
+diff: -3999597
 403 'Big Tease, The'
+diff: 5
+diff: -95
+diff: 305
+diff: -3999595
 405 'Bigfoot: The Unforgettable Encounter'
+diff: 7
+diff: -93
+diff: 307
+diff: -3999593
 407 'Biker Zombies'
+diff: 8
+diff: -92
+diff: 308
+diff: -3999592
 408 'Bikini Bistro'
+diff: 9
+diff: -91
+diff: 309
+diff: -3999591
 409 'Bikini Drive-In'
+diff: 10
+diff: -90
+diff: 310
+diff: -3999590
 410 'Bikini Hoe-Down'
+diff: 12
+diff: -88
+diff: 312
+diff: -3999588
 412 'Bikini Traffic School'
+diff: 13
+diff: -87
+diff: 313
+diff: -3999587
 413 'Billy Elliot'
+diff: 15
+diff: -85
+diff: 315
+diff: -3999585
 415 'Billys Holiday'
+diff: 16
+diff: -84
+diff: 316
+diff: -3999584
 416 'Billys Hollywood Screen Kiss'
+diff: 18
+diff: -82
+diff: 318
+diff: -3999582
 418 'Bio-Dome'
+diff: 20
+diff: -80
+diff: 320
+diff: -3999580
 420 'Bird of Prey'
+diff: 21
+diff: -79
+diff: 321
+diff: -3999579
 421 'Birdcage, The'
+diff: 22
+diff: -78
+diff: 322
+diff: -3999578
 422 'Birthday Girl'
+diff: 23
+diff: -77
+diff: 323
+diff: -3999577
 423 'BitterSweet'
+diff: 24
+diff: -76
+diff: 324
+diff: -3999576
 424 'Black and White'
+diff: 25
+diff: -75
+diff: 325
+diff: -3999575
 425 'Black Cat Run'
+diff: 27
+diff: -73
+diff: 327
+diff: -3999573
 427 'Black Day Blue Night'
+diff: 28
+diff: -72
+diff: 328
+diff: -3999572
 428 'Black Dog'
+diff: 30
+diff: -70
+diff: 330
+diff: -3999570
 430 'Black Hawk Down'
+diff: 31
+diff: -69
+diff: 331
+diff: -3999569
 431 'Black Knight'
+diff: 33
+diff: -67
+diff: 333
+diff: -3999567
 433 'Black Out'
+diff: 35
+diff: -65
+diff: 335
+diff: -3999565
 435 'Black Rose of Harlem'
+diff: 36
+diff: -64
+diff: 336
+diff: -3999564
 436 'Black Scorpion'
+diff: 37
+diff: -63
+diff: 337
+diff: -3999563
 437 'Black Scorpion II: Aftershock'
+diff: 39
+diff: -61
+diff: 339
+diff: -3999561
 439 'Black Sea 213'
+diff: 40
+diff: -60
+diff: 340
+diff: -3999560
 440 'Black Sheep'
+diff: 42
+diff: -58
+diff: 342
+diff: -3999558
 442 'Black Widow Escort'
+diff: 43
+diff: -57
+diff: 343
+diff: -3999557
 443 'Blackjack'
+diff: 44
+diff: -56
+diff: 344
+diff: -3999556
 444 'BlackMale'
+diff: 45
+diff: -55
+diff: 345
+diff: -3999555
 445 'Blackout, The'
+diff: 47
+diff: -53
+diff: 347
+diff: -3999553
 447 'Blacktop'
+diff: 48
+diff: -52
+diff: 348
+diff: -3999552
 448 'Blackwater Trail'
+diff: 50
+diff: -50
+diff: 350
+diff: -3999550
 450 'Blade'
+diff: 52
+diff: -48
+diff: 352
+diff: -3999548
 452 'Blair Witch Project, The'
+diff: 53
+diff: -47
+diff: 353
+diff: -3999547
 453 'Blast'
+diff: 54
+diff: -46
+diff: 354
+diff: -3999546
 454 'Blast from the Past'
+diff: 57
+diff: -43
+diff: 357
+diff: -3999543
 457 'Bless the Child'
+diff: 58
+diff: -42
+diff: 358
+diff: -3999542
 458 'Blessed Art Thou'
+diff: 59
+diff: -41
+diff: 359
+diff: -3999541
 459 'Blind Faith'
+diff: 60
+diff: -40
+diff: 360
+diff: -3999540
 460 'Blind Heat'
+diff: 62
+diff: -38
+diff: 362
+diff: -3999538
 462 'Bliss'
+diff: 63
+diff: -37
+diff: 363
+diff: -3999537
 463 'Blonde Heaven'
+diff: 64
+diff: -36
+diff: 364
+diff: -3999536
 464 'Blondes Have More Guns'
+diff: 65
+diff: -35
+diff: 365
+diff: -3999535
 465 'Blood & Donuts'
+diff: 67
+diff: -33
+diff: 367
+diff: -3999533
 467 'Blood and Wine'
+diff: 68
+diff: -32
+diff: 368
+diff: -3999532
 468 'Blood Money'
+diff: 71
+diff: -29
+diff: 371
+diff: -3999529
 471 'Blood of the Innocent'
+diff: 72
+diff: -28
+diff: 372
+diff: -3999528
 472 'Blood Oranges, The'
+diff: 74
+diff: -26
+diff: 374
+diff: -3999526
 474 'Blood, Guts, Bullets and Octane'
+diff: 77
+diff: -23
+diff: 377
+diff: -3999523
 477 'Bloodhounds'
+diff: 79
+diff: -21
+diff: 379
+diff: -3999521
 479 'Bloodmoon'
+diff: 80
+diff: -20
+diff: 380
+diff: -3999520
 480 'Bloodsport 2'
+diff: 81
+diff: -19
+diff: 381
+diff: -3999519
 481 'Bloody Murder'
+diff: 84
+diff: -16
+diff: 384
+diff: -3999516
 484 'Blow'
+diff: 85
+diff: -15
+diff: 385
+diff: -3999515
 485 'Blow Dry'
+diff: 86
+diff: -14
+diff: 386
+diff: -3999514
 486 'Blowback'
+diff: 89
+diff: -11
+diff: 389
+diff: -3999511
 489 'Blue Hawaii'
+diff: 90
+diff: -10
+diff: 390
+diff: -3999510
 490 'Blue Juice'
+diff: 91
+diff: -9
+diff: 391
+diff: -3999509
 491 'Blue Moon'
+diff: 92
+diff: -8
+diff: 392
+diff: -3999508
 492 'Blue Ridge Fall'
+diff: 93
+diff: -7
+diff: 393
+diff: -3999507
 493 'Blues Brothers 2000'
+diff: 96
+diff: -4
+diff: 396
+diff: -3999504
 496 'Bobby G. Cant Swim'
-Bruinbase>
-
-
-Our result:
-
-                  LOAD xsmall FROM 'xsmall.del' WITH INDEX
-Read 3 pages      SELECT COUNT(*) FROM xsmall
-Read 3 pages      SELECT * FROM xsmall WHERE key < 2500
-
-                  LOAD small FROM 'small.del' WITH INDEX
-Read 3 pages      SELECT COUNT(*) FROM small
-Read 7 pages      SELECT * FROM small WHERE key > 100 AND key < 500
-
-                  LOAD medium FROM 'medium.del' WITH INDEX
-Read 5 pages      SELECT COUNT(*) FROM medium
-Read 5 pages      SELECT * FROM medium WHERE key = 489
-
-                  LOAD large FROM 'large.del' WITH INDEX
-Read 19 pages     SELECT COUNT(*) FROM large
-Read 16 pages     SELECT * FROM large WHERE key > 4500
-Read 16 pages     SELECT * FROM large WHERE key > 4500 AND key > 0
-
-                  LOAD xlarge FROM 'xlarge.del' WITH INDEX
-Read 219 pages    SELECT COUNT(*) FROM xlarge
-Read 7 pages      SELECT * FROM xlarge WHERE key = 4240
-Read 279 pages  SELECT * FROM xlarge WHERE key > 400 AND key < 500 AND key > 100 AND key < 4000000
-
-
-TA result:
-
-                  LOAD xsmall FROM 'xsmall.del' WITH INDEX
-Read 3 pages      SELECT COUNT(*) FROM xsmall
-Read 3 pages      SELECT * FROM xsmall WHERE key < 2500
-
-                  LOAD small FROM 'small.del' WITH INDEX
-Read 2-3 pages    SELECT COUNT(*) FROM small
-Read 7 pages      SELECT * FROM small WHERE key > 100 AND key < 500
-
-                  LOAD medium FROM 'medium.del' WITH INDEX
-Read 5 pages      SELECT COUNT(*) FROM medium
-Read 5 pages      SELECT * FROM medium WHERE key = 489
-
-                  LOAD large FROM 'large.del' WITH INDEX
-Read 22 pages     SELECT COUNT(*) FROM large
-Read 16 pages     SELECT * FROM large WHERE key > 4500
-Read 16 pages     SELECT * FROM large WHERE key > 4500 AND key > 0
-
-                  LOAD xlarge FROM 'xlarge.del' WITH INDEX
-Read 220 pages    SELECT COUNT(*) FROM xlarge
-Read 6 pages      SELECT * FROM xlarge WHERE key = 4240
-Read 69-73 pages  SELECT * FROM xlarge WHERE key > 400 AND key < 500 AND key > 100 AND key < 4000000
+key exceeds max limits - skipping.
+Bruinbase> Bruinbase> 

@@ -1,2 +1,2 @@
-LOAD movie FROM 'movie.del' WITH INDEX
-SELECT COUNT(*) FROM movie
+LOAD xsmall FROM 'xsmall.del' WITH INDEX
+SELECT * FROM xsmall WHERE value='Baby Take a Bow'

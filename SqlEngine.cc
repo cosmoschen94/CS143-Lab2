@@ -166,7 +166,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             // if (rf.read(rid, key, value)<0) {
             //     puts("err read");
             // }
-            
+
             diff = key - condition_equal_val;
             if (diff != 0) {
                 puts("no match");
@@ -177,6 +177,17 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             } else {
                 count = 1;
                 printHelper(rf, rid, attr, key, value);
+                // switch (attr) {
+                //     case 1:
+                //       fprintf(stdout, "%d\n", key);
+                //       break;
+                //     case 2:
+                //       fprintf(stdout, "%s\n", value.c_str());
+                //       break;
+                //     case 3:
+                //       fprintf(stdout, "%d '%s'\n", key, value.c_str());
+                //       break;
+                // }
             }
 
             canTerminate = true;
@@ -192,7 +203,8 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         }
 
         // should be INT_MIN not 0 because searchKey can be negative
-        b.locate(max(INT_MIN, condition_min_val), c);
+        condition_min_val = max(INT_MIN, condition_min_val);
+        b.locate(condition_min_val, c);
         cout << "condition_min_val: " << condition_min_val << endl;
         cout << "condition_max_val: " << condition_max_val << endl;
         cout << "\n-----\n" << endl;
@@ -201,8 +213,9 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
             // for "key < 1000" type constraints we can check immediately
             if (key > condition_max_val && condition_max_val != -999) {
-                // puts("key exceeds max limits - skipping.");
-                goto skip_printing;
+                puts("key exceeds max limits - skipping.");
+                //goto skip_printing;
+                goto skip_to_end;
             }
 
             int diff;
@@ -218,7 +231,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
                     //puts("comparing values");
                     diff = strcmp(value.c_str(), cond[i].value);
                 }
-
+                //cout << "diff: " << diff << endl;
                 if (cond[i].comp == SelCond::EQ && diff != 0) {
                     // this activates for "value=___" queries
                     puts("condition EQ - but not this tuple. skip");
