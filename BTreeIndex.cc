@@ -198,8 +198,13 @@ RC BTreeIndex::recursive_insert(int key, const RecordId& rid, int height, PageId
         // before insertAndSplit we need to set nextNodePtr
         siblingPid = pf.endPid();
 
-        //cout << "The pid of sibling node is: ";
-        //cout << siblingPid << endl;
+
+        // Debugging note: it gives incorrect count=242 (count should be 1000) for large.del
+        // because I forget to set the next node pointer for the sibling node.
+        // set sibling leaf node's sibling pid to current leaf node's sibling pid
+        sibling.setNextNodePtr(l.getNextNodePtr());
+
+        // set current leaf node's sibling pid to siblingPid
         l.setNextNodePtr(siblingPid);
 
         //cout << "The pid of next node is: ";

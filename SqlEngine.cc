@@ -14,6 +14,7 @@
 #include <fstream>
 #include <algorithm>
 #include <queue>
+#include <climits>
 #include "Bruinbase.h"
 #include "SqlEngine.h"
 #include "BTreeIndex.h"
@@ -66,7 +67,8 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         int condition_equal_val = -999;
 
         bool condition_min = false;
-        int condition_min_val = 0;
+        // should be INT_MIN not 0 because searchKey can be negative
+        int condition_min_val = INT_MIN;
 
         bool condition_max = false;
         int condition_max_val = -999;
@@ -159,9 +161,12 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             if (b.readForward(c, key, rid)<0) {
                 puts("err readForward");
             }
-            if (rf.read(rid, key, value)<0) {
-                puts("err read");
-            }
+
+            // move this section into printHelper() to reduce page read
+            // if (rf.read(rid, key, value)<0) {
+            //     puts("err read");
+            // }
+            
             diff = key - condition_equal_val;
             if (diff != 0) {
                 puts("no match");
@@ -171,7 +176,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
                 puts("conflict 2");
             } else {
                 count = 1;
-                printHelper(attr, key, value);
+                printHelper(rf, rid, attr, key, value);
             }
 
             canTerminate = true;
@@ -181,21 +186,22 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             b.locate(condition_min_val, c);
         } else {
             puts ("init condition 0");
-            b.locate(0, c);
+
+            // should be INT_MIN not 0 because searchKey can be negative
+            b.locate(INT_MIN, c);
         }
 
-        b.locate(max(0, condition_min_val), c);
+        // should be INT_MIN not 0 because searchKey can be negative
+        b.locate(max(INT_MIN, condition_min_val), c);
         cout << "condition_min_val: " << condition_min_val << endl;
         cout << "condition_max_val: " << condition_max_val << endl;
         cout << "\n-----\n" << endl;
 
         while (b.readForward(c, key, rid) == 0 && canTerminate == false) {
-            if ((rc = rf.read(rid, key, value)) < 0) {
-                cout << "read err" << endl;
-            }
+
             // for "key < 1000" type constraints we can check immediately
             if (key > condition_max_val && condition_max_val != -999) {
-                puts("key exceeds max limits - skipping.");
+                // puts("key exceeds max limits - skipping.");
                 goto skip_printing;
             }
 
@@ -249,7 +255,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             } //end for
 
             count++;
-            printHelper(attr, key, value);
+            printHelper(rf, rid, attr, key, value);
 
             skip_printing:
                 cout << "";
@@ -275,34 +281,34 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         for (unsigned i = 0; i < cond.size(); i++) {
           // compute the difference between the tuple value and the condition value
           switch (cond[i].attr) {
-          case 1:
-    	diff = key - atoi(cond[i].value);
-    	break;
-          case 2:
-    	diff = strcmp(value.c_str(), cond[i].value);
-    	break;
+            case 1:
+        	    diff = key - atoi(cond[i].value);
+        	    break;
+            case 2:
+        	    diff = strcmp(value.c_str(), cond[i].value);
+        	    break;
           }
 
           // skip the tuple if any condition is not met
           switch (cond[i].comp) {
-          case SelCond::EQ:
-    	if (diff != 0) goto next_tuple;
-    	break;
-          case SelCond::NE:
-    	if (diff == 0) goto next_tuple;
-    	break;
-          case SelCond::GT:
-    	if (diff <= 0) goto next_tuple;
-    	break;
-          case SelCond::LT:
-    	if (diff >= 0) goto next_tuple;
-    	break;
-          case SelCond::GE:
-    	if (diff < 0) goto next_tuple;
-    	break;
-          case SelCond::LE:
-    	if (diff > 0) goto next_tuple;
-    	break;
+              case SelCond::EQ:
+            	  if (diff != 0) goto next_tuple;
+            	  break;
+              case SelCond::NE:
+            	  if (diff == 0) goto next_tuple;
+            	  break;
+              case SelCond::GT:
+            	  if (diff <= 0) goto next_tuple;
+            	  break;
+              case SelCond::LT:
+            	  if (diff >= 0) goto next_tuple;
+            	  break;
+              case SelCond::GE:
+            	  if (diff < 0) goto next_tuple;
+            	  break;
+              case SelCond::LE:
+            	  if (diff > 0) goto next_tuple;
+              	break;
           }
         }
 
@@ -326,7 +332,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         // move to the next tuple
         next_tuple:
         ++rid;
-      }
+      } //while
 
   } //end else from opening index - todo: is this in the right area?
 
@@ -401,6 +407,10 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
   }
 
   if (index) {
+
+    // testing function
+    // b.printBTree();
+
     b.close();
   }
   puts("Successfully wrote all tuples to RecordFile");
@@ -476,11 +486,22 @@ RC SqlEngine::parseLoadLine(const string& line, int& key, string& value)
     return 0;
 }
 
-void SqlEngine::printHelper(int& attr, int& key, string& value) {
+void SqlEngine::printHelper(RecordFile rf, RecordId rid, int& attr, int& key, string& value) {
     // attr = 1: key
     // attr = 2: value
     // attr = 3: * (print both columns)
     // attr = 4: count(*) (not handled here)
+
+    if(attr == 4){
+      return;
+    }
+
+    RC rc;
+    // move this code section here to reduce page read
+    if ((rc = rf.read(rid, key, value)) < 0) {
+        cout << "read err" << endl;
+    }
+
     switch (attr) {
         case 1:
           fprintf(stdout, "%d\n", key);
