@@ -84,6 +84,9 @@ RC BTLeafNode::printBuffer()
   cout << num;
   cout << " pairs" << endl;
 
+  cout << "The sibling is: ";
+  cout << getNextNodePtr() << endl;
+
   for(int i=0; i<num; i++){
     char key[4];
     char pageid[4];

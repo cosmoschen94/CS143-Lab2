@@ -14,6 +14,7 @@
 #include <fstream>
 #include <algorithm>
 #include <queue>
+#include <climits>
 #include "Bruinbase.h"
 #include "SqlEngine.h"
 #include "BTreeIndex.h"
@@ -66,7 +67,8 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         int condition_equal_val = -999;
 
         bool condition_min = false;
-        int condition_min_val = 0;
+        // should be INT_MIN not 0 because searchKey can be negative
+        int condition_min_val = INT_MIN;
 
         bool condition_max = false;
         int condition_max_val = -999;
@@ -181,10 +183,13 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             b.locate(condition_min_val, c);
         } else {
             puts ("init condition 0");
-            b.locate(0, c);
+
+            // should be INT_MIN not 0 because searchKey can be negative
+            b.locate(INT_MIN, c);
         }
 
-        b.locate(max(0, condition_min_val), c);
+        // should be INT_MIN not 0 because searchKey can be negative
+        b.locate(max(INT_MIN, condition_min_val), c);
         cout << "condition_min_val: " << condition_min_val << endl;
         cout << "condition_max_val: " << condition_max_val << endl;
         cout << "\n-----\n" << endl;
@@ -275,34 +280,34 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         for (unsigned i = 0; i < cond.size(); i++) {
           // compute the difference between the tuple value and the condition value
           switch (cond[i].attr) {
-          case 1:
-    	diff = key - atoi(cond[i].value);
-    	break;
-          case 2:
-    	diff = strcmp(value.c_str(), cond[i].value);
-    	break;
+            case 1:
+        	    diff = key - atoi(cond[i].value);
+        	    break;
+            case 2:
+        	    diff = strcmp(value.c_str(), cond[i].value);
+        	    break;
           }
 
           // skip the tuple if any condition is not met
           switch (cond[i].comp) {
-          case SelCond::EQ:
-    	if (diff != 0) goto next_tuple;
-    	break;
-          case SelCond::NE:
-    	if (diff == 0) goto next_tuple;
-    	break;
-          case SelCond::GT:
-    	if (diff <= 0) goto next_tuple;
-    	break;
-          case SelCond::LT:
-    	if (diff >= 0) goto next_tuple;
-    	break;
-          case SelCond::GE:
-    	if (diff < 0) goto next_tuple;
-    	break;
-          case SelCond::LE:
-    	if (diff > 0) goto next_tuple;
-    	break;
+              case SelCond::EQ:
+            	  if (diff != 0) goto next_tuple;
+            	  break;
+              case SelCond::NE:
+            	  if (diff == 0) goto next_tuple;
+            	  break;
+              case SelCond::GT:
+            	  if (diff <= 0) goto next_tuple;
+            	  break;
+              case SelCond::LT:
+            	  if (diff >= 0) goto next_tuple;
+            	  break;
+              case SelCond::GE:
+            	  if (diff < 0) goto next_tuple;
+            	  break;
+              case SelCond::LE:
+            	  if (diff > 0) goto next_tuple;
+              	break;
           }
         }
 
@@ -326,7 +331,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         // move to the next tuple
         next_tuple:
         ++rid;
-      }
+      } //while
 
   } //end else from opening index - todo: is this in the right area?
 
@@ -401,6 +406,10 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
   }
 
   if (index) {
+
+    // testing function
+    b.printBTree();
+    
     b.close();
   }
   puts("Successfully wrote all tuples to RecordFile");
