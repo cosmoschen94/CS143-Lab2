@@ -99,6 +99,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
                     break;
 
                     case SelCond::NE:
+                    // what happens here?
                     break;
 
                     case SelCond::GT:
@@ -217,9 +218,13 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
                 //goto skip_printing;
                 goto skip_to_end;
             }
-            // if ((rc = rf.read(rid, key, value)) < 0) {
-            //     cout << "read err" << endl;
-            // }
+
+            if(attr != 4){
+              if ((rc = rf.read(rid, key, value)) < 0) {
+                  cout << "read err" << endl;
+              }
+            }
+
             int diff;
 
             for (unsigned i = 0; i < cond.size(); i++) {
@@ -270,8 +275,12 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             } //end for
 
             count++;
-            printHelper(rf, rid, attr, key, value);
-            //printHelper2(attr, key, value);
+
+            if(attr == 4){
+              goto skip_printing;
+            }
+
+            printHelper2(attr, key, value);
 
             skip_printing:
                 cout << "";

@@ -1,0 +1,109 @@
+Our result:
+
+                  LOAD xsmall FROM 'xsmall.del' WITH INDEX
+Read 3 pages      SELECT COUNT(*) FROM xsmall
+Read 3 pages      SELECT * FROM xsmall WHERE key < 2500
+
+                  LOAD small FROM 'small.del' WITH INDEX
+Read 8 pages      SELECT COUNT(*) FROM small
+Read 8 pages      SELECT * FROM small WHERE key > 100 AND key < 500
+
+                  LOAD medium FROM 'medium.del' WITH INDEX
+Read 32 pages     SELECT COUNT(*) FROM medium
+Read 5 pages      SELECT * FROM medium WHERE key = 489
+
+                  LOAD large FROM 'large.del' WITH INDEX
+Read 237 pages    SELECT COUNT(*) FROM large
+Read 16 pages     SELECT * FROM large WHERE key > 4500
+Read 16 pages     SELECT * FROM large WHERE key > 4500 AND key > 0
+
+                  LOAD xlarge FROM 'xlarge.del' WITH INDEX
+Read 12423 pages  SELECT COUNT(*) FROM xlarge
+Read 7 pages      SELECT * FROM xlarge WHERE key = 4240
+Read 12146 pages  SELECT * FROM xlarge WHERE key > 400 AND key < 500 AND key > 100 AND key < 4000000
+
+
+TA result:
+
+                  LOAD xsmall FROM 'xsmall.del' WITH INDEX
+Read 3 pages      SELECT COUNT(*) FROM xsmall
+Read 3 pages      SELECT * FROM xsmall WHERE key < 2500
+
+                  LOAD small FROM 'small.del' WITH INDEX
+Read 2-3          pages SELECT COUNT(*) FROM small
+Read 7 pages      SELECT * FROM small WHERE key > 100 AND key < 500
+
+                  LOAD medium FROM 'medium.del' WITH INDEX
+Read 5 pages      SELECT COUNT(*) FROM medium
+Read 5 pages      SELECT * FROM medium WHERE key = 489
+
+                  LOAD large FROM 'large.del' WITH INDEX
+Read 22 pages     SELECT COUNT(*) FROM large
+Read 16 pages     SELECT * FROM large WHERE key > 4500
+Read 16 pages     SELECT * FROM large WHERE key > 4500 AND key > 0
+
+                  LOAD xlarge FROM 'xlarge.del' WITH INDEX
+Read 220 pages    SELECT COUNT(*) FROM xlarge
+Read 6 pages      SELECT * FROM xlarge WHERE key = 4240
+Read 69-73 pages  SELECT * FROM xlarge WHERE key > 400 AND key < 500 AND key > 100 AND key < 4000000
+
+
+
+
+After moving rf.read() into printHelper():
+
+Our result:
+
+                  LOAD xsmall FROM 'xsmall.del' WITH INDEX
+Read 3 pages      SELECT COUNT(*) FROM xsmall
+Read 3 pages      SELECT * FROM xsmall WHERE key < 2500
+
+                  LOAD small FROM 'small.del' WITH INDEX
+Read 3 pages      SELECT COUNT(*) FROM small
+Read 7 pages      SELECT * FROM small WHERE key > 100 AND key < 500
+
+                  LOAD medium FROM 'medium.del' WITH INDEX
+Read 5 pages      SELECT COUNT(*) FROM medium
+Read 5 pages      SELECT * FROM medium WHERE key = 489
+
+                  LOAD large FROM 'large.del' WITH INDEX
+Read 19 pages     SELECT COUNT(*) FROM large
+Read 16 pages     SELECT * FROM large WHERE key > 4500
+Read 16 pages     SELECT * FROM large WHERE key > 4500 AND key > 0
+
+                  LOAD xlarge FROM 'xlarge.del' WITH INDEX
+Read 219 pages    SELECT COUNT(*) FROM xlarge
+Read 7 pages      SELECT * FROM xlarge WHERE key = 4240
+Read 279 pages  SELECT * FROM xlarge WHERE key > 400 AND key < 500 AND key > 100 AND key < 4000000
+
+
+TA result:
+
+                  LOAD xsmall FROM 'xsmall.del' WITH INDEX
+Read 3 pages      SELECT COUNT(*) FROM xsmall
+Read 3 pages      SELECT * FROM xsmall WHERE key < 2500
+
+                  LOAD small FROM 'small.del' WITH INDEX
+Read 2-3 pages    SELECT COUNT(*) FROM small
+Read 7 pages      SELECT * FROM small WHERE key > 100 AND key < 500
+
+                  LOAD medium FROM 'medium.del' WITH INDEX
+Read 5 pages      SELECT COUNT(*) FROM medium
+Read 5 pages      SELECT * FROM medium WHERE key = 489
+
+                  LOAD large FROM 'large.del' WITH INDEX
+Read 22 pages     SELECT COUNT(*) FROM large
+Read 16 pages     SELECT * FROM large WHERE key > 4500
+Read 16 pages     SELECT * FROM large WHERE key > 4500 AND key > 0
+
+                  LOAD xlarge FROM 'xlarge.del' WITH INDEX
+Read 220 pages    SELECT COUNT(*) FROM xlarge
+Read 6 pages      SELECT * FROM xlarge WHERE key = 4240
+Read 69-73 pages  SELECT * FROM xlarge WHERE key > 400 AND key < 500 AND key > 100 AND key < 4000000
+
+
+
+Two more fixes:
+
+A query with only NE
+A query with both key and value
