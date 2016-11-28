@@ -289,7 +289,7 @@ Read 16 pages     SELECT * FROM large WHERE key > 4500 AND key > 0
                   LOAD xlarge FROM 'xlarge.del' WITH INDEX
 Read 219 pages    SELECT COUNT(*) FROM xlarge
 Read 7 pages      SELECT * FROM xlarge WHERE key = 4240
-Read 12146 pages  SELECT * FROM xlarge WHERE key > 400 AND key < 500 AND key > 100 AND key < 4000000
+Read 279 pages  SELECT * FROM xlarge WHERE key > 400 AND key < 500 AND key > 100 AND key < 4000000
 
 
 TA result:
