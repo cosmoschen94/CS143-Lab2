@@ -161,9 +161,12 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             if (b.readForward(c, key, rid)<0) {
                 puts("err readForward");
             }
-            if (rf.read(rid, key, value)<0) {
-                puts("err read");
-            }
+
+            // move this section into printHelper() to reduce page read
+            // if (rf.read(rid, key, value)<0) {
+            //     puts("err read");
+            // }
+            
             diff = key - condition_equal_val;
             if (diff != 0) {
                 puts("no match");
@@ -173,7 +176,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
                 puts("conflict 2");
             } else {
                 count = 1;
-                printHelper(attr, key, value);
+                printHelper(rf, rid, attr, key, value);
             }
 
             canTerminate = true;
@@ -195,12 +198,10 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         cout << "\n-----\n" << endl;
 
         while (b.readForward(c, key, rid) == 0 && canTerminate == false) {
-            if ((rc = rf.read(rid, key, value)) < 0) {
-                cout << "read err" << endl;
-            }
+
             // for "key < 1000" type constraints we can check immediately
             if (key > condition_max_val && condition_max_val != -999) {
-                puts("key exceeds max limits - skipping.");
+                // puts("key exceeds max limits - skipping.");
                 goto skip_printing;
             }
 
@@ -254,7 +255,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             } //end for
 
             count++;
-            printHelper(attr, key, value);
+            printHelper(rf, rid, attr, key, value);
 
             skip_printing:
                 cout << "";
@@ -408,8 +409,8 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
   if (index) {
 
     // testing function
-    b.printBTree();
-    
+    // b.printBTree();
+
     b.close();
   }
   puts("Successfully wrote all tuples to RecordFile");
@@ -485,11 +486,22 @@ RC SqlEngine::parseLoadLine(const string& line, int& key, string& value)
     return 0;
 }
 
-void SqlEngine::printHelper(int& attr, int& key, string& value) {
+void SqlEngine::printHelper(RecordFile rf, RecordId rid, int& attr, int& key, string& value) {
     // attr = 1: key
     // attr = 2: value
     // attr = 3: * (print both columns)
     // attr = 4: count(*) (not handled here)
+
+    if(attr == 4){
+      return;
+    }
+
+    RC rc;
+    // move this code section here to reduce page read
+    if ((rc = rf.read(rid, key, value)) < 0) {
+        cout << "read err" << endl;
+    }
+
     switch (attr) {
         case 1:
           fprintf(stdout, "%d\n", key);
