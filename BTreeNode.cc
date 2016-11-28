@@ -84,6 +84,9 @@ RC BTLeafNode::printBuffer()
   cout << num;
   cout << " pairs" << endl;
 
+  cout << "The sibling is: ";
+  cout << getNextNodePtr() << endl;
+
   for(int i=0; i<num; i++){
     char key[4];
     char pageid[4];
@@ -96,16 +99,18 @@ RC BTLeafNode::printBuffer()
     int ipageid = *(int*)pageid;
     int isid = *(int*)sid;
 
-    cout << "Pair ";
-    cout << i+1 << endl;
-    cout << "key: ";
-    cout << ikey << endl;
-    cout << "pageid: ";
-    cout << ipageid << endl;
-    cout << "sid: ";
-    cout << isid << endl;
-    cout << "==============" << endl;
+    cout << "{ ";
+    cout << i+1;
+    cout << ": ";
+    cout << ikey;
+    cout << ", ";
+    cout << ipageid;
+    cout << ", ";
+    cout << isid;
+    cout << " }, ";
   }
+
+  cout << endl;
 
   return 0;
 }
@@ -135,7 +140,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 
     // the leaf node is full with 84 pairs, buffer has 1016 bytes and last 8 bytes are left untouched.
     if(num == 84) {
-      cout << "Node Full" << endl;
+      //cout << "Node Full" << endl;
       return RC_NODE_FULL;
     }
 
@@ -401,7 +406,12 @@ PageId BTLeafNode::getNextNodePtr()
 {
   char pid[4];
   strncpy(pid, buffer+4, 4);
-  return *(int*)pid;
+  int nextPid = *(int*)pid;
+  if(nextPid == 0){
+    return RC_END_OF_TREE;
+  }
+
+  return nextPid;
 }
 
 /*
@@ -417,40 +427,7 @@ RC BTLeafNode::setNextNodePtr(PageId pid)
 
 
 
-RC BTNonLeafNode::printBuffer()
-{
-  char count[4];
 
-
-  strncpy(count, buffer, 4);
-
-
-  int num = *(int*)count;
-  cout << "There are ";
-  cout << num;
-  cout << " pairs" << endl;
-
-  for(int i=0; i<num; i++){
-    char key[4];
-    char pageid[4];
-    strncpy(key, (buffer+8)+(i*8), 4);
-    strncpy(pageid, (buffer+8)+(i*8)+4, 4);
-
-
-    int ikey = *(int*)key;
-    int ipageid = *(int*)pageid;
-
-    cout << "Pair ";
-    cout << i+1 << endl;
-    cout << "key: ";
-    cout << ikey << endl;
-    cout << "pageid: ";
-    cout << ipageid << endl;
-    cout << "==============" << endl;
-  }
-
-  return 0;
-}
 
 /*
  * BTNonLeafNode constructor
@@ -548,7 +525,7 @@ RC BTNonLeafNode::insert(int key, PageId pid)
 
     // the leaf node is full with 127 pairs, buffer has 1024 bytes.
     if(num == 127) {
-      cout << "Node Full" << endl;
+      //cout << "Node Full" << endl;
       return RC_NODE_FULL;
     }
 
@@ -791,3 +768,65 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
  }
 
  // Testing functions:
+
+ RC BTNonLeafNode::printBuffer()
+ {
+   char count[4];
+
+
+   strncpy(count, buffer, 4);
+
+
+   int num = *(int*)count;
+   cout << "There are ";
+   cout << num;
+   cout << " pairs" << endl;
+
+   char firstpageid[4];
+   strncpy(firstpageid, buffer+4, 4);
+   int fpageid = *(int*)firstpageid;
+   cout << "First pid is: ";
+   cout << fpageid << endl;
+
+   for(int i=0; i<num; i++){
+     char key[4];
+     char pageid[4];
+     strncpy(key, (buffer+8)+(i*8), 4);
+     strncpy(pageid, (buffer+8)+(i*8)+4, 4);
+
+
+     int ikey = *(int*)key;
+     int ipageid = *(int*)pageid;
+
+     cout << "{ ";
+     cout << i+1;
+     cout << ": ";
+     cout << ikey;
+     cout << ", ";
+     cout << ipageid;
+     cout << " }, ";
+
+   }
+   cout << endl;
+   return 0;
+ }
+
+ PageId BTNonLeafNode::getPageId(int pos){
+   int count = getKeyCount();
+   int ipageid;
+   for(int i=0; i < count; i++) {
+     if(i == pos){
+       char pageid[4];
+       strncpy(pageid, (buffer+4)+(i*8), 4);
+       ipageid = *(int*)pageid;
+     }
+   }
+
+   if(pos == count){
+     char pageid[4];
+     strncpy(pageid, (buffer+4)+(pos*8), 4);
+     ipageid = *(int*)pageid;
+   }
+
+   return ipageid;
+ }

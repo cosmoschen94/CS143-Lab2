@@ -119,6 +119,7 @@ class BTLeafNode {
      * First four bytes of buffer is the count of pairs (recordid, key). Each pair takes 12 bytes.
      * The four bytes of the buffer after the first four bytes is the pageid.
      * The rest fo the bytes of the buffer correspond to all pairs (recordid, key).
+     * The buffer can hold up to 84 pairs.
      */
 
      //   __________________________________________
@@ -204,6 +205,7 @@ class BTNonLeafNode {
      * Testing functions
      */
     RC printBuffer();
+    PageId getPageId(int pos);
 
   private:
    /**
@@ -217,6 +219,7 @@ class BTNonLeafNode {
    * The four bytes of the buffer after the first four bytes is the pageid that points to a node
    * with keys smaller than the key in the next 4 bytes.
    * The rest fo the bytes of the buffer correspond to all pairs (key, pid).
+   * The buffer can hold up to 127 pairs.
    */
 
   //   __________________________________

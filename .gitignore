@@ -34,3 +34,6 @@
 /704308016
 *.DS_Store
 *.dSYM
+
+*.idx
+*.tbl

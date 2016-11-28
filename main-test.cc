@@ -10,57 +10,70 @@
 
 using namespace std;
 
-void nonLeafNodeInsert();
-
 int main()
 {
     BTreeIndex b;
 
-    b.open("testing", 'r');
+    b.open("testing", 'w');
 
-    RecordId r;
-    r.pid = 3;
-    r.sid = 5;
+    // 85 is the number of tuples that will cause leaf overflow
+    // 5419 is the number of tuples that will cause nonleaf overflow, which will cause a new root to be created
 
-    //RC res = b.insert(1,r);
-    // if (res != 0) {
-    //     puts("error inserting");
-    // } else {
-    //     puts("success inserting");
-    // }
+    int tuples = 5377;
 
-    IndexCursor cursor;
+    //populate B+ Tree
+    for(int i = 0; i < tuples; i++){
+      RecordId r;
+      r.pid = i;
+      r.sid = i;
 
-    b.locate(1, cursor);
+      RC res = b.insert(i,r);
+      if (res != 0) {
+          cout << i << endl;
+          puts("error inserting");
+          //return 0;
 
-    cout << cursor.pid << endl;
-    cout << cursor.eid << endl;
+      } else {
+          //puts("success inserting");
+      }
+    }
 
-    int key;
-    RecordId rid;
-    b.readForward(cursor, key, rid);
-
-    cout << cursor.pid << endl;
-    cout << cursor.eid << endl;
-    cout << key << endl;
-    cout << rid.pid << endl;
-    cout << rid.sid << endl;
-
-    b.readForward(cursor, key, rid);
-
-    cout << cursor.pid << endl;
-    cout << cursor.eid << endl;
-    cout << key << endl;
-    cout << rid.pid << endl;
-    cout << rid.sid << endl;
-
-    BTLeafNode l;
-    l.read(1, pf);
-    l.printBuffer();
+    // RecordId temp;
+    // temp.pid = 83;
+    // temp.sid = 83;
+    // b.insert(83,temp);
 
 
+    b.printBTree();
 
     b.close();
+
+    // IndexCursor cursor;
+    //
+    // b.locate(1, cursor);
+    //
+    // cout << cursor.pid << endl;
+    // cout << cursor.eid << endl;
+    //
+    // int key;
+    // RecordId rid;
+    // b.readForward(cursor, key, rid);
+    //
+    // cout << cursor.pid << endl;
+    // cout << cursor.eid << endl;
+    // cout << key << endl;
+    // cout << rid.pid << endl;
+    // cout << rid.sid << endl;
+    //
+    // b.readForward(cursor, key, rid);
+    //
+    // cout << cursor.pid << endl;
+    // cout << cursor.eid << endl;
+    // cout << key << endl;
+    // cout << rid.pid << endl;
+    // cout << rid.sid << endl;
+
+
 
   // BTLeafNode test;
   // BTLeafNode test_sibling;

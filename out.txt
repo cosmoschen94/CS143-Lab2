@@ -1,0 +1,76 @@
+rm -f bruinbase bruinbase.exe *.o *~ lex.sql.c SqlParser.tab.c SqlParser.tab.h
+bison -d -psql SqlParser.y
+flex -Psql SqlParser.l
+g++ -ggdb -o bruinbase main.cc SqlParser.tab.c lex.sql.c SqlEngine.cc BTreeIndex.cc BTreeNode.cc RecordFile.cc PageFile.cc
+[H[2JBruinbase> Successfully wrote all tuples to RecordFile
+Bruinbase> Associated index file does exist!
+condition_equal: 0
+condition_min: 0
+condition_max: 0
+init condition 0
+condition_min_val: 0
+condition_max_val: -999
+
+-----
+
+49
+Bruinbase> Associated index file does exist!
+condition_equal: 0
+condition_min: 0
+condition_max: 0
+init condition 0
+condition_min_val: 0
+condition_max_val: -999
+
+-----
+
+272 'Baby Take a Bow'
+272 'Baby Take a Bow'
+2339 'Last Picture Show, The'
+2342 'Last Ride, The'
+2391 'Lets Scare Jessica to Death'
+2515 'Love Story'
+2617 'Mary, Queen of Scots'
+2619 'MASH'
+2634 'Matter of Life and Death, A'
+2648 'McKenzie Break, The'
+2818 'Murphys War'
+2950 'Noite do Espantalho, A'
+2965 'Notre Dame de Paris'
+2971 'Nuovo cinema Paradiso'
+3012 'Once Upon a Time in America'
+3084 'Outside the Law'
+3099 'Paint Your Wagon'
+3199 'Pink Flamingos'
+3229 'Plein soleil'
+3297 'Professionals, The'
+3334 'Qualcuno in ascolto'
+3351 'Rainbow Thief, The'
+3392 'Red Baron, The'
+3420 'Remando al viento'
+3440 'Return of the Musketeers, The'
+3518 'Roustabout'
+3546 'Ryans Daughter'
+3561 'Sand Pebbles, The'
+3567 'Saturday Night Fever'
+3582 'Scandalosa Gilda'
+3619 'Seconds'
+3792 'Sky Trackers'
+3936 'Star Trek: The Motion Picture'
+3937 'Star Trek: The Wrath of Khan'
+3938 'Star Wars'
+3941 'Star Wars: Episode V - The Empire Strikes Back'
+3953 'Stay Away, Joe'
+3992 'Strangers on a Train'
+4047 'Superman'
+4099 'Tale of Two Sisters'
+4289 'Trouble with Angels, The'
+4392 'Valdez Is Coming'
+4462 'Voyage to the Bottom of the Sea'
+4497 'Wash, The'
+4515 'Wedding Party, The'
+4570 'Who Is Harry Kellerman and Why Is He Saying Those Terrible Things About Me?'
+4583 'Wild Angels, The'
+4589 'Wild Ride, The'
+4657 'Wrecking Crew, The'
+Bruinbase> 

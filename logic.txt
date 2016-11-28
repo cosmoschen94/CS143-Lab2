@@ -1,0 +1,30 @@
+
+===========================
+This section finds which key to start searching from, and which key to stop searching at
+If there's no "key" constraints then we'll just search every single key and filter by value
+===========================
+
+For each condition in the query (example: key > 3 AND value < 100):
+    if constraint is a "key" constraint:
+        Find out if there's an "equals" operator
+            if so, set condition_equal_val to the value
+
+        Find out if there's a "not-equals" operator
+            if so,
+
+        Find the absolute minimum key
+        Find the absolute minimum value
+
+        Find the absolute maximum key
+        Find the absolute maximum value
+
+If there's a condition_equal...
+    do tree.locate on the condition_equal_val
+    do tree.readForward to get the key, value tuple
+    print this
+
+Otherwise...
+    look through every key between absolute_min_key and absolute_max_key
+    absolute_min_key defaults to 0, and absolute_max_key defaults to the end of the while loop
+
+    
