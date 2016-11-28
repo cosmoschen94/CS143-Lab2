@@ -217,7 +217,9 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
                 //goto skip_printing;
                 goto skip_to_end;
             }
-
+            // if ((rc = rf.read(rid, key, value)) < 0) {
+            //     cout << "read err" << endl;
+            // }
             int diff;
 
             for (unsigned i = 0; i < cond.size(); i++) {
@@ -269,6 +271,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
             count++;
             printHelper(rf, rid, attr, key, value);
+            //printHelper2(attr, key, value);
 
             skip_printing:
                 cout << "";
@@ -513,6 +516,29 @@ void SqlEngine::printHelper(RecordFile rf, RecordId rid, int& attr, int& key, st
     // move this code section here to reduce page read
     if ((rc = rf.read(rid, key, value)) < 0) {
         cout << "read err" << endl;
+    }
+
+    switch (attr) {
+        case 1:
+          fprintf(stdout, "%d\n", key);
+          break;
+        case 2:
+          fprintf(stdout, "%s\n", value.c_str());
+          break;
+        case 3:
+          fprintf(stdout, "%d '%s'\n", key, value.c_str());
+          break;
+    }
+}
+
+void SqlEngine::printHelper2(int& attr, int& key, string& value) {
+    // attr = 1: key
+    // attr = 2: value
+    // attr = 3: * (print both columns)
+    // attr = 4: count(*) (not handled here)
+
+    if(attr == 4){
+      return;
     }
 
     switch (attr) {

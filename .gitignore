@@ -37,3 +37,10 @@
 
 *.idx
 *.tbl
+
+
+out.txt
+*.tab.h
+*.tab.c
+*.sql.c
+bruinbase
