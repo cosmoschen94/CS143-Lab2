@@ -214,7 +214,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
         //Initialization!
 
-        if (only_value){
+        if (only_value && attr != 4){
           // avoid B+ tree if the query is only for value
           puts("Only value query, skip to default sequential");
           goto Default_lookup;
