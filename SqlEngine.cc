@@ -76,6 +76,16 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         bool only_value = true;
 
         //int absolute_smallest_key = 0;
+        bool has_equals_value = false;
+        string equals_value = "";
+
+        bool has_max_value = false;
+        bool has_le = false;
+        string max_value = "";
+
+        bool has_min_value = false;
+        bool has_ge = false;
+        string min_value = "";
 
         int tmp;
         bool canTerminate = false;
@@ -152,7 +162,54 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
                 } //end switch cond[i].comp
             } //end if(cond[i].attr == 1)
+            if (cond[i].attr == 2) {
+                string tmpStr = cond[i].value;
+                if (cond[i].comp == SelCond::EQ) {
+                    if(has_equals_value && equals_value != "") {
+                        puts("value equals conflict");
+                        goto skip_to_end;
+                    } else {
+                        puts("value equals condition");
+                        has_equals_value = true;
+                        equals_value = cond[i].value;
+                    }
+                }
+                if (cond[i].comp == SelCond::GT) {
+                    has_min_value = true;
+                    if (min_value == "") {
+                        min_value = tmpStr;
+                    } else {
+                        min_value = max(tmpStr, min_value);
+                    }
+                }
+                if (cond[i].comp == SelCond::LT) {
+                    has_max_value = true;
+                    if (max_value == "") {
+                        max_value = tmpStr;
+                    } else {
+                        max_value = min(tmpStr, max_value);
+                    }
+                }
+                if (cond[i].comp == SelCond::GE) {
+                    has_min_value = true;
+                    has_ge = true;
+                    if (min_value == "") {
+                        min_value = tmpStr;
+                    } else {
+                        min_value = max(tmpStr, min_value);
+                    }
+                }
+                if (cond[i].comp == SelCond::LE) {
+                    has_max_value = true;
+                    has_le = true;
+                    if (max_value == "") {
+                        max_value = tmpStr;
+                    } else {
+                        max_value = min(tmpStr, max_value);
+                    }
+                }
 
+            }
         } //end for
 
         //Initialization!
@@ -176,32 +233,52 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
                 puts("err readForward");
             }
 
-            // move this section into printHelper() to reduce page read
-            // if (rf.read(rid, key, value)<0) {
-            //     puts("err read");
-            // }
+            //move this section into printHelper() to reduce page read
+            if (rf.read(rid, key, value)<0) {
+                puts("err read");
+            }
 
             diff = key - condition_equal_val;
+            cout << "=====" << endl;
+            cout << "has_equals_value: " << has_equals_value << endl;
+            cout << "has_min_value: " << has_min_value << endl;
+            cout << "has_max_value: " << has_max_value << endl;
+            cout << "has_ge: " << has_ge << endl;
+            cout << "has_le: " << has_le << endl;
+            cout << "eq value: " << equals_value << endl;
+            cout << "min value: " << min_value << endl;
+            cout << "max value: " << max_value << endl;
+            cout << "-----" << endl;
             if (diff != 0) {
                 puts("no match");
             } else if (condition_equal && condition_max && condition_equal_val > condition_max_val) {
                 puts("conflict 1");
             } else if (condition_equal && condition_min && condition_equal_val < condition_min_val) {
                 puts("conflict 2");
+            } else if (has_le && strcmp(value.c_str(), max_value.c_str()) > 0) {
+                puts("conflict 3");
+            } else if (has_ge && strcmp(value.c_str(), min_value.c_str()) < 0) {
+                puts("conflict 4");
+            } else if (has_equals_value && strcmp(value.c_str(), equals_value.c_str()) != 0) {
+                puts("conflict 5");
+            } else if (!has_le && has_max_value && strcmp(value.c_str(), max_value.c_str()) >= 0) {
+                puts("conflict 6");
+            } else if (!has_ge && has_min_value && strcmp(value.c_str(), min_value.c_str()) <= 0) {
+                puts("conflict 7");
             } else {
                 count = 1;
-                printHelper(rf, rid, attr, key, value);
-                // switch (attr) {
-                //     case 1:
-                //       fprintf(stdout, "%d\n", key);
-                //       break;
-                //     case 2:
-                //       fprintf(stdout, "%s\n", value.c_str());
-                //       break;
-                //     case 3:
-                //       fprintf(stdout, "%d '%s'\n", key, value.c_str());
-                //       break;
-                // }
+                //printHelper(rf, rid, attr, key, value);
+                switch (attr) {
+                    case 1:
+                      fprintf(stdout, "%d\n", key);
+                      break;
+                    case 2:
+                      fprintf(stdout, "%s\n", value.c_str());
+                      break;
+                    case 3:
+                      fprintf(stdout, "%d '%s'\n", key, value.c_str());
+                      break;
+                }
             }
 
             canTerminate = true;
