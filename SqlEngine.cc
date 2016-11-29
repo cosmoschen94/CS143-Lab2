@@ -73,13 +73,21 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         bool condition_max = false;
         int condition_max_val = -999;
 
+        bool only_value = true;
+
         //int absolute_smallest_key = 0;
 
         int tmp;
         bool canTerminate = false;
         count = 0;
+
+        // Query with only NE condition, regardless of key or value attribute
+        // should avoid B+ Tree index lookup and jump to default sequential lookup
+        if (cond.size() == 1 && cond[0].comp == SelCond::NE) goto Default_lookup;
+
         for (unsigned i = 0; i < cond.size(); i++) {
             if (cond[i].attr == 1) {
+                only_value = false;
                 tmp = atoi(cond[i].value);
                 // if (absolute_smallest_key == -999) {
                 //     absolute_smallest_key = tmp;
@@ -149,6 +157,11 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
         //Initialization!
 
+        if (only_value){
+          // avoid B+ tree if the query is only for value
+          puts("Only value query, skip to default sequential");
+          goto Default_lookup;
+        }
 
         cout << "condition_equal: " << condition_equal << endl;
         cout << "condition_min: " << condition_min << endl;
@@ -292,6 +305,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   } else {
       puts("Associated index file does not exist. Proceeding with skeleton code implementation.");
 
+      Default_lookup:
       // scan the table file from the beginning
       rid.pid = rid.sid = 0;
       count = 0;
