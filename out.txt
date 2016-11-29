@@ -9,7 +9,7 @@ condition_max_val: -999
 
 -----
 
-8
+16
 Bruinbase> Associated index file does exist!
 condition_equal: 0
 condition_min: 0
@@ -21,8 +21,12 @@ condition_max_val: 2499
 -----
 
 272 'Baby Take a Bow'
+272 'Baby Take a Bow'
+1578 'G.I. Blues'
 1578 'G.I. Blues'
 2244 'King Creole'
+2244 'King Creole'
+2342 'Last Ride, The'
 2342 'Last Ride, The'
 key exceeds max limits - skipping.
 Bruinbase> Bruinbase> Successfully wrote all tuples to RecordFile
