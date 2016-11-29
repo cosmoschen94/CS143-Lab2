@@ -73,13 +73,31 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         bool condition_max = false;
         int condition_max_val = -999;
 
+        bool only_value = true;
+
         //int absolute_smallest_key = 0;
+        bool has_equals_value = false;
+        string equals_value = "";
+
+        bool has_max_value = false;
+        bool has_le = false;
+        string max_value = "";
+
+        bool has_min_value = false;
+        bool has_ge = false;
+        string min_value = "";
 
         int tmp;
         bool canTerminate = false;
         count = 0;
+
+        // Query with only NE condition, regardless of key or value attribute
+        // should avoid B+ Tree index lookup and jump to default sequential lookup
+        if (cond.size() == 1 && cond[0].comp == SelCond::NE) goto Default_lookup;
+
         for (unsigned i = 0; i < cond.size(); i++) {
             if (cond[i].attr == 1) {
+                only_value = false;
                 tmp = atoi(cond[i].value);
                 // if (absolute_smallest_key == -999) {
                 //     absolute_smallest_key = tmp;
@@ -99,6 +117,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
                     break;
 
                     case SelCond::NE:
+                    // what happens here?
                     break;
 
                     case SelCond::GT:
@@ -143,11 +162,63 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
                 } //end switch cond[i].comp
             } //end if(cond[i].attr == 1)
+            if (cond[i].attr == 2) {
+                string tmpStr = cond[i].value;
+                if (cond[i].comp == SelCond::EQ) {
+                    if(has_equals_value && equals_value != "") {
+                        puts("value equals conflict");
+                        goto skip_to_end;
+                    } else {
+                        puts("value equals condition");
+                        has_equals_value = true;
+                        equals_value = cond[i].value;
+                    }
+                }
+                if (cond[i].comp == SelCond::GT) {
+                    has_min_value = true;
+                    if (min_value == "") {
+                        min_value = tmpStr;
+                    } else {
+                        min_value = max(tmpStr, min_value);
+                    }
+                }
+                if (cond[i].comp == SelCond::LT) {
+                    has_max_value = true;
+                    if (max_value == "") {
+                        max_value = tmpStr;
+                    } else {
+                        max_value = min(tmpStr, max_value);
+                    }
+                }
+                if (cond[i].comp == SelCond::GE) {
+                    has_min_value = true;
+                    has_ge = true;
+                    if (min_value == "") {
+                        min_value = tmpStr;
+                    } else {
+                        min_value = max(tmpStr, min_value);
+                    }
+                }
+                if (cond[i].comp == SelCond::LE) {
+                    has_max_value = true;
+                    has_le = true;
+                    if (max_value == "") {
+                        max_value = tmpStr;
+                    } else {
+                        max_value = min(tmpStr, max_value);
+                    }
+                }
 
+            }
         } //end for
 
         //Initialization!
 
+        if (only_value && attr != 4){
+          // avoid B+ tree if the query is only for value
+          puts("Only value query, skip to default sequential");
+          goto Default_lookup;
+        }
 
         cout << "condition_equal: " << condition_equal << endl;
         cout << "condition_min: " << condition_min << endl;
@@ -161,19 +232,53 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             if (b.readForward(c, key, rid)<0) {
                 puts("err readForward");
             }
+
+            //move this section into printHelper() to reduce page read
             if (rf.read(rid, key, value)<0) {
                 puts("err read");
             }
+
             diff = key - condition_equal_val;
+            cout << "=====" << endl;
+            cout << "has_equals_value: " << has_equals_value << endl;
+            cout << "has_min_value: " << has_min_value << endl;
+            cout << "has_max_value: " << has_max_value << endl;
+            cout << "has_ge: " << has_ge << endl;
+            cout << "has_le: " << has_le << endl;
+            cout << "eq value: " << equals_value << endl;
+            cout << "min value: " << min_value << endl;
+            cout << "max value: " << max_value << endl;
+            cout << "-----" << endl;
             if (diff != 0) {
                 puts("no match");
             } else if (condition_equal && condition_max && condition_equal_val > condition_max_val) {
                 puts("conflict 1");
             } else if (condition_equal && condition_min && condition_equal_val < condition_min_val) {
                 puts("conflict 2");
+            } else if (has_le && strcmp(value.c_str(), max_value.c_str()) > 0) {
+                puts("conflict 3");
+            } else if (has_ge && strcmp(value.c_str(), min_value.c_str()) < 0) {
+                puts("conflict 4");
+            } else if (has_equals_value && strcmp(value.c_str(), equals_value.c_str()) != 0) {
+                puts("conflict 5");
+            } else if (!has_le && has_max_value && strcmp(value.c_str(), max_value.c_str()) >= 0) {
+                puts("conflict 6");
+            } else if (!has_ge && has_min_value && strcmp(value.c_str(), min_value.c_str()) <= 0) {
+                puts("conflict 7");
             } else {
                 count = 1;
-                printHelper(attr, key, value);
+                //printHelper(rf, rid, attr, key, value);
+                switch (attr) {
+                    case 1:
+                      fprintf(stdout, "%d\n", key);
+                      break;
+                    case 2:
+                      fprintf(stdout, "%s\n", value.c_str());
+                      break;
+                    case 3:
+                      fprintf(stdout, "%d '%s'\n", key, value.c_str());
+                      break;
+                }
             }
 
             canTerminate = true;
@@ -189,19 +294,25 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         }
 
         // should be INT_MIN not 0 because searchKey can be negative
-        b.locate(max(INT_MIN, condition_min_val), c);
+        condition_min_val = max(INT_MIN, condition_min_val);
+        b.locate(condition_min_val, c);
         cout << "condition_min_val: " << condition_min_val << endl;
         cout << "condition_max_val: " << condition_max_val << endl;
         cout << "\n-----\n" << endl;
 
         while (b.readForward(c, key, rid) == 0 && canTerminate == false) {
-            if ((rc = rf.read(rid, key, value)) < 0) {
-                cout << "read err" << endl;
-            }
+
             // for "key < 1000" type constraints we can check immediately
             if (key > condition_max_val && condition_max_val != -999) {
                 puts("key exceeds max limits - skipping.");
-                goto skip_printing;
+                //goto skip_printing;
+                goto skip_to_end;
+            }
+
+            if(attr != 4){
+              if ((rc = rf.read(rid, key, value)) < 0) {
+                  cout << "read err" << endl;
+              }
             }
 
             int diff;
@@ -217,7 +328,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
                     //puts("comparing values");
                     diff = strcmp(value.c_str(), cond[i].value);
                 }
-
+                //cout << "diff: " << diff << endl;
                 if (cond[i].comp == SelCond::EQ && diff != 0) {
                     // this activates for "value=___" queries
                     puts("condition EQ - but not this tuple. skip");
@@ -254,7 +365,12 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             } //end for
 
             count++;
-            printHelper(attr, key, value);
+
+            if(attr == 4){
+              goto skip_printing;
+            }
+
+            printHelper2(attr, key, value);
 
             skip_printing:
                 cout << "";
@@ -266,6 +382,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   } else {
       puts("Associated index file does not exist. Proceeding with skeleton code implementation.");
 
+      Default_lookup:
       // scan the table file from the beginning
       rid.pid = rid.sid = 0;
       count = 0;
@@ -408,8 +525,8 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
   if (index) {
 
     // testing function
-    b.printBTree();
-    
+    // b.printBTree();
+
     b.close();
   }
   puts("Successfully wrote all tuples to RecordFile");
@@ -485,11 +602,45 @@ RC SqlEngine::parseLoadLine(const string& line, int& key, string& value)
     return 0;
 }
 
-void SqlEngine::printHelper(int& attr, int& key, string& value) {
+void SqlEngine::printHelper(RecordFile rf, RecordId rid, int& attr, int& key, string& value) {
     // attr = 1: key
     // attr = 2: value
     // attr = 3: * (print both columns)
     // attr = 4: count(*) (not handled here)
+
+    if(attr == 4){
+      return;
+    }
+
+    RC rc;
+    // move this code section here to reduce page read
+    if ((rc = rf.read(rid, key, value)) < 0) {
+        cout << "read err" << endl;
+    }
+
+    switch (attr) {
+        case 1:
+          fprintf(stdout, "%d\n", key);
+          break;
+        case 2:
+          fprintf(stdout, "%s\n", value.c_str());
+          break;
+        case 3:
+          fprintf(stdout, "%d '%s'\n", key, value.c_str());
+          break;
+    }
+}
+
+void SqlEngine::printHelper2(int& attr, int& key, string& value) {
+    // attr = 1: key
+    // attr = 2: value
+    // attr = 3: * (print both columns)
+    // attr = 4: count(*) (not handled here)
+
+    if(attr == 4){
+      return;
+    }
+
     switch (attr) {
         case 1:
           fprintf(stdout, "%d\n", key);

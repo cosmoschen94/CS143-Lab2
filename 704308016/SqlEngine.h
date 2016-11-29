@@ -28,7 +28,7 @@ struct SelCond {
  */
 class SqlEngine {
  public:
-    
+
   /**
    * takes the user commands from commandline and executes them.
    * when user issues SELECT or LOAD from commandline, this function
@@ -67,6 +67,9 @@ class SqlEngine {
    * @return error code. 0 if no error
    */
   static RC parseLoadLine(const std::string& line, int& key, std::string& value);
+
+  static void printHelper(RecordFile rf, RecordId rid, int& attr, int& key, std::string& value);
+  static void printHelper2(int& attr, int& key, std::string& value);
 };
 
 #endif /* SQLENGINE_H */

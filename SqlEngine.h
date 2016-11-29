@@ -68,7 +68,8 @@ class SqlEngine {
    */
   static RC parseLoadLine(const std::string& line, int& key, std::string& value);
 
-  static void printHelper(int& attr, int& key, std::string& value);
+  static void printHelper(RecordFile rf, RecordId rid, int& attr, int& key, std::string& value);
+  static void printHelper2(int& attr, int& key, std::string& value);
 };
 
 #endif /* SQLENGINE_H */
